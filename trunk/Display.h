@@ -35,6 +35,7 @@ class Display {
   void set_ink(int iR, int iG, int iB);
   void set_paper(int iR, int iG, int iB);
   void character(int iAddr, int iX, int iY, char cChar, boolean bClearBuffer);
+  void draw_row_mask(int iAddr, int iRow, int iXoffset, byte bBitmask);
   void show_word(String sWord, int iPosition = 1, boolean bForce = false);
   static const int CMD_totalArgs[];
   static const int iPanel[];
