@@ -86,7 +86,7 @@ void Display::show_word(String sWord, int iPosition, boolean bForce) {
   int iDot;
   int iDotDeduct = 0;
   int iLetterWidth = 7;
-  char* foo = "Iil"; 
+  char* foo = "IilY"; 
  
   this->clear_buffers(true);
   

@@ -51,7 +51,7 @@ void setup() {
 // loop all the good stuff
 /* ---------------------------------- */
 void loop() {
-  screen_saver("PONG");
+  screen_saver("PINGPONG");
 
   get_button_states();                               // see whats going on with the buttons
   if (button_pressed) {
@@ -65,19 +65,20 @@ void loop() {
 void screen_saver(String sScrollText) {
   static long previousMillis = 0;        // will store last time LED was updated
   static int iScroll = 60;
-  long interval = 1000;           // interval at which to blink (milliseconds)
+  long interval = 100;           // interval at which to blink (milliseconds)
   unsigned long currentMillis = millis();
   int iTextLen = sScrollText.length()*8*-1;
 
   if(currentMillis - previousMillis > interval) {
     previousMillis = currentMillis;
-    myDisplay.show_word(sScrollText);
-//    myDisplay.show_word(sScrollText, iScroll, true);
-//    iScroll--;
-//    if (iScroll < iTextLen) {
-//      iScroll = 60;
-      myDisplay.set_ink(random(0,10),random(0,10),random(0,10));
-//    }
+//    myDisplay.show_word(sScrollText);
+    myDisplay.show_word(sScrollText, iScroll, true);
+    iScroll--;
+    if (iScroll < iTextLen) {
+      iScroll = 60;
+      myDisplay.set_ink(random(0,15),random(0,15),random(0,15));
+//      myDisplay.set_paper(random(0,15),random(0,15),random(0,15));
+    }
   }
 }
 
