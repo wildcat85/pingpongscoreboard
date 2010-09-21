@@ -68,6 +68,12 @@ void Display::set_paper(int iR, int iG, int iB) {
   }
 }
 
+void Display::draw_row_mask(int iAddr, int iRow, int iXoffset, byte bBitmask) {
+  Serial.println(__func__);
+  Serial.println(bBitmask, HEX);
+  sendCMD(iAddr, CMD_DRAW_ROW_MASK, iRow, iXoffset, bBitmask);
+}
+
 void Display::character(int iAddr, int iX, int iY, char cChar, boolean bClearBuffer) {
   char ascii[100];
 //  Serial.println(__func__);
@@ -86,7 +92,6 @@ void Display::show_word(String sWord, int iPosition, boolean bForce) {
   int iDot;
   int iDotDeduct = 0;
   int iLetterWidth = 7;
-  char* foo = "IilY"; 
  
   this->clear_buffers(true);
   
@@ -96,15 +101,22 @@ void Display::show_word(String sWord, int iPosition, boolean bForce) {
   
   for (int iCount = 0; iCount < sWord.length(); iCount++) {
 
-    if (strchr(foo, sWord[iCount]) != NULL) 
-    { 
-      iPosition--;
+    iDotDeduct = 0;
+
+    if (strchr("!ITil", sWord[iCount]) != NULL) {       // 2 front 2 back
+      iPosition--; 
       iPosition--;
       iDotDeduct = 1;
-    } else {
-      iDotDeduct = 0;
+    } else if (strchr("Y1", sWord[iCount]) != NULL) {  // 1 front 1 back
+      iPosition--;
+    } else if (strchr("jtyz", sWord[iCount]) != NULL) {  // 0 front 2 back
+      iDotDeduct = 1;
+    } else if (strchr(":", sWord[iCount]) != NULL) {  // 2 front 4 back
+      iPosition--; 
+      iPosition--;
+      iDotDeduct = 3;
     }
-
+    
     iDisplay = floor((iPosition+(iCount*(iLetterWidth+1)))/8);
     if (((iPosition+(iCount*(iLetterWidth+1)))%8) == 0) {
       iDisplay--;

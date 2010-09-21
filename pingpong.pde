@@ -43,7 +43,7 @@ void setup() {
   MsTimer2::start();
   myDisplay.set_ink(10,0,0);
   myDisplay.set_paper(0,0,0);
-//  myDisplay.show_word("TASH");
+  myDisplay.show_word("PONG");
 }
 
 /* ---------------------------------- */
@@ -51,7 +51,7 @@ void setup() {
 // loop all the good stuff
 /* ---------------------------------- */
 void loop() {
-  screen_saver("PINGPONG");
+//  screen_saver("6:30");
 
   get_button_states();                               // see whats going on with the buttons
   if (button_pressed) {
