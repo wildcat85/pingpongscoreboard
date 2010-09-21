@@ -103,7 +103,7 @@ void Display::show_word(String sWord, int iPosition, boolean bForce) {
 
     iDotDeduct = 0;
 
-    if (strchr("!ITil", sWord[iCount]) != NULL) {       // 2 front 2 back
+    if (strchr("!ITil ", sWord[iCount]) != NULL) {       // 2 front 2 back
       iPosition--; 
       iPosition--;
       iDotDeduct = 1;

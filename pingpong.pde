@@ -5,10 +5,10 @@
 
 // Initialise constants - These babies won't change
 const String VERSION = "v01g";
-const int P1_BUTTON = 40;         // the number of the pushbutton pin
-const int P2_BUTTON = 41;         // the number of the pushbutton pin
-const int P3_BUTTON = 43;         // the number of the pushbutton pin
-const int P4_BUTTON = 42;         // the number of the pushbutton pin
+const int P1_BUTTON = 38;         // the number of the pushbutton pin
+const int P2_BUTTON = 39;         // the number of the pushbutton pin
+const int P3_BUTTON = 40;         // the number of the pushbutton pin
+const int P4_BUTTON = 41;         // the number of the pushbutton pin
 const int HISTORY_LENGTH = 8;     // the history length
 const long DEBOUNCE_DELAY = 20;   // the debounce time; increase if the output flickers
 const int POINTS_BEFORE_CHANGE = 5;
@@ -43,7 +43,7 @@ void setup() {
   MsTimer2::start();
   myDisplay.set_ink(10,0,0);
   myDisplay.set_paper(0,0,0);
-  myDisplay.show_word("PONG");
+//  myDisplay.show_word("PONG");
 }
 
 /* ---------------------------------- */
@@ -51,7 +51,7 @@ void setup() {
 // loop all the good stuff
 /* ---------------------------------- */
 void loop() {
-//  screen_saver("6:30");
+  screen_saver("PING PONG ROCKS MY JOCKS     :)");
 
   get_button_states();                               // see whats going on with the buttons
   if (button_pressed) {
@@ -71,13 +71,11 @@ void screen_saver(String sScrollText) {
 
   if(currentMillis - previousMillis > interval) {
     previousMillis = currentMillis;
-//    myDisplay.show_word(sScrollText);
     myDisplay.show_word(sScrollText, iScroll, true);
     iScroll--;
     if (iScroll < iTextLen) {
       iScroll = 60;
       myDisplay.set_ink(random(0,15),random(0,15),random(0,15));
-//      myDisplay.set_paper(random(0,15),random(0,15),random(0,15));
     }
   }
 }
@@ -127,13 +125,13 @@ void update_score_board(int* score) {
   if (score[0] < 10) sNum = "0" + (String)score[0]; else sNum = (String)score[0];
   if (score[0] != score_board_old[0]) {
     myDisplay.character(0x10, 0, 0, sNum[0], true);
-    myDisplay.character(0x11, -2, 0, sNum[1], true);
+    myDisplay.character(0x11, 0, 0, sNum[1], true);
   }
   
   if (score[1] < 10) sNum = "0" + (String)score[1]; else sNum = (String)score[1];
   if (score[1] != score_board_old[1]) {
     myDisplay.character(0x13, 1, 0, sNum[0], true);
-    myDisplay.character(0x14, -1, 0, sNum[1], true);
+    myDisplay.character(0x14, 1, 0, sNum[1], true);
   }
   
   if (iPoints == 5) {
