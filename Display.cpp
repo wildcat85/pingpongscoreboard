@@ -84,6 +84,24 @@ void Display::character(int iAddr, int iX, int iY, char cChar, boolean bClearBuf
   sendCMD(iAddr, CMD_PRINT_CHAR, toByte(iX), toByte(iY), cChar);
 }
 
+void Display::screen_saver(String sScrollText) {
+  static long previousMillis = 0;        // will store last time LED was updated
+  static int iScroll = 60;
+  long interval = 50;           // interval at which to blink (milliseconds)
+  unsigned long currentMillis = millis();
+  int iTextLen = sScrollText.length()*8*-1;
+
+  if(currentMillis - previousMillis > interval) {
+    previousMillis = currentMillis;
+    show_word(sScrollText, iScroll, true);
+    iScroll--;
+    if (iScroll < iTextLen) {
+      iScroll = 60;
+      set_ink(random(0,15),random(0,15),random(0,15));
+    }
+  }
+}
+
 void Display::show_word(String sWord, int iPosition, boolean bForce) {
   Serial.println(__func__);
   char ascii[100];
