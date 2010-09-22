@@ -7,8 +7,8 @@
 const String VERSION = "v01g";
 const int P1_BUTTON = 36;         // the number of the pushbutton pin
 const int P2_BUTTON = 48;         // the number of the pushbutton pin
-const int P3_BUTTON = 40;         // the number of the pushbutton pin
-const int P4_BUTTON = 44;         // the number of the pushbutton pin
+const int P3_BUTTON = 44;         // the number of the pushbutton pin
+const int P4_BUTTON = 40;         // the number of the pushbutton pin
 const int HISTORY_LENGTH = 8;     // the history length
 const long DEBOUNCE_DELAY = 20;   // the debounce time; increase if the output flickers
 const int POINTS_BEFORE_CHANGE = 5;
@@ -41,7 +41,7 @@ void setup() {
   pinMode(13, OUTPUT);
   MsTimer2::set(500, flash); // 500ms period
   MsTimer2::start();
-  myDisplay.set_ink(10,0,0);
+  myDisplay.set_ink(15,0,0);
   myDisplay.set_paper(0,0,0);
   myDisplay.show_word("READY");
 }
@@ -65,7 +65,7 @@ void loop() {
 void screen_saver(String sScrollText) {
   static long previousMillis = 0;        // will store last time LED was updated
   static int iScroll = 60;
-  long interval = 100;           // interval at which to blink (milliseconds)
+  long interval = 50;           // interval at which to blink (milliseconds)
   unsigned long currentMillis = millis();
   int iTextLen = sScrollText.length()*8*-1;
 
@@ -86,11 +86,6 @@ void flash() {
   digitalWrite(13, output);
   output = !output;
 }
-
-if Mackie = knob-eater;
- punch in balls;
- else not required, he is a knob-eater;
- 
 
 void draw_arrow(int _iDirection) {
 //  myDisplay.clear_buffers(true);
