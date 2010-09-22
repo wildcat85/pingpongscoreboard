@@ -2,6 +2,7 @@
 #include <MsTimer2.h>
 #include <Wire.h>
 #include "Display.h"
+#include "Game.h"
 
 // Initialise constants - These babies won't change
 const String VERSION = "0.1a";
@@ -15,32 +16,29 @@ const int POINTS_BEFORE_CHANGE = 5;
 
 // Initialise variables - These babies will change
 boolean button_pressed = false;
-boolean score_update = false;
 String sHistory = "";
 String sButtons = "0000";
 char cChar[0];
-int iPoints = 0;
-int score_board[] = {0,0};
-boolean iDirection;
+//boolean iDirection;
 Display myDisplay = Display();
+Game myGame = Game();
 
 /* ---------------------------------- */
 // void setup()
 // setup all the good stuff
 /* ---------------------------------- */
 void setup() {
-  Wire.begin();    // join I2C bus (address optional for master)
-  Serial.begin(57600); 
-  // config serial as 9600 for some sweet serial monitor action
-  debug("PingPong v" + (String)VERSION);
-  debug("--------------");
-  pinMode(P1_BUTTON, INPUT);     // set P1_BUTTON as an INPUT
-  pinMode(P2_BUTTON, INPUT);     // set P2_BUTTON as an INPUT
-  pinMode(P3_BUTTON, INPUT);     // set P3_BUTTON as an INPUT
-  pinMode(P4_BUTTON, INPUT);     // set P4_BUTTON as an INPUT
+  Wire.begin();                                    // join I2C bus (address optional for master)
+  Serial.begin(57600);                             // config serial as 57600 for some sweet serial monitor action
+  Serial.println("PingPong v" + (String)VERSION);
+  Serial.println("--------------");
+  pinMode(P1_BUTTON, INPUT);                       // set P1_BUTTON as an INPUT
+  pinMode(P2_BUTTON, INPUT);                       // set P2_BUTTON as an INPUT
+  pinMode(P3_BUTTON, INPUT);                       // set P3_BUTTON as an INPUT
+  pinMode(P4_BUTTON, INPUT);                       // set P4_BUTTON as an INPUT
   pinMode(13, OUTPUT);
-  MsTimer2::set(500, flash); // 500ms period
-  MsTimer2::start();
+//  MsTimer2::set(500, flash); // 500ms period
+//  MsTimer2::start();
   myDisplay.set_ink(15,0,0);
   myDisplay.set_paper(0,0,0);
   myDisplay.show_word("READY");
@@ -56,35 +54,9 @@ void loop() {
   get_button_states();                               // see whats going on with the buttons
   if (button_pressed) {
     process_button_presses();                                  // process button presses
+    update_score_board();
   }
-  if (score_update) {
-    update_score_board(score_board);
-  }
-}
 
-void screen_saver(String sScrollText) {
-  static long previousMillis = 0;        // will store last time LED was updated
-  static int iScroll = 60;
-  long interval = 50;           // interval at which to blink (milliseconds)
-  unsigned long currentMillis = millis();
-  int iTextLen = sScrollText.length()*8*-1;
-
-  if(currentMillis - previousMillis > interval) {
-    previousMillis = currentMillis;
-    myDisplay.show_word(sScrollText, iScroll, true);
-    iScroll--;
-    if (iScroll < iTextLen) {
-      iScroll = 60;
-      myDisplay.set_ink(random(0,15),random(0,15),random(0,15));
-    }
-  }
-}
-
-void flash() {
-  static boolean output = HIGH;
-  
-  digitalWrite(13, output);
-  output = !output;
 }
 
 void draw_arrow(int _iDirection) {
@@ -106,47 +78,41 @@ void draw_arrow(int _iDirection) {
 }
 
 /* ---------------------------------- */
-// void display_word()
-// display a word on the scoreboard
-/* ---------------------------------- */
-
-/* ---------------------------------- */
 // void update_score_board(int* score)
 // formats score for score board and displays it
 /* ---------------------------------- */
-void update_score_board(int* score) {
+void update_score_board() {
   double dFract, dInt;
   String sNum;
-  static int score_board_old[] = {-1,-1};
   static int iArrow = -1;
+  int iPoints, iScoreLeft, iScoreRight, iDirection;
 
-  debug("refreshing score board");
+  iScoreLeft = myGame.get_score(TEAM_LEFT);
+  iScoreRight = myGame.get_score(TEAM_RIGHT);
+  iDirection = myGame.get_direction();
+  iPoints = myGame.get_points();
 
-  if (score[0] < 10) sNum = "0" + (String)score[0]; else sNum = (String)score[0];
-  if (score[0] != score_board_old[0]) {
+  if (iScoreLeft < 10) sNum = "0" + (String)iScoreLeft; else sNum = (String)iScoreLeft;
+  if (myGame.score_changed(TEAM_LEFT)) {
     myDisplay.character(0x10, 0, 0, sNum[0], true);
     myDisplay.character(0x11, 0, 0, sNum[1], true);
   }
   
-  if (score[1] < 10) sNum = "0" + (String)score[1]; else sNum = (String)score[1];
-  if (score[1] != score_board_old[1]) {
+  if (iScoreRight < 10) sNum = "0" + (String)iScoreRight; else sNum = (String)iScoreRight;
+  if (myGame.score_changed(TEAM_RIGHT)) {
     myDisplay.character(0x13, 1, 0, sNum[0], true);
     myDisplay.character(0x14, 1, 0, sNum[1], true);
   }
   
-  if (floor(iPoints/5) != iArrow) {
-    iDirection = !iDirection;
-    draw_arrow(iDirection);
-    iArrow = floor(iPoints/5);
+  if (floor(iPoints/POINTS_BEFORE_CHANGE) != iArrow) {
+    myGame.set_direction(!iDirection);
+    draw_arrow(!iDirection);
+    iArrow = floor(iPoints/POINTS_BEFORE_CHANGE);
   }
 
   myDisplay.swap_buffers();
   
-  score_board_old[0] = score[0];
-  score_board_old[1] = score[1];
-  
-  debug((String)score_board[0] + " - " + (String)score_board[1] + " [" + (String)sHistory + "]");
-  score_update = false;
+  Serial.println((String)myGame.get_score(TEAM_LEFT) + " - " + (String)myGame.get_score(TEAM_RIGHT) + " [" + (String)sHistory + "]");
 }
 
 
@@ -155,54 +121,42 @@ void update_score_board(int* score) {
 // calculate scores and update score board
 /* ---------------------------------- */
 void process_button_presses() {
-  static boolean bGameOn = false;
-
-  if (bGameOn) {
+  if (myGame.GameOn) {
     // Players 1 and 2
     if (sButtons == "1000" || sButtons == "0100") {
-      if (score_board[0] < 21) {
-        score_board[0] += 1; score_update = true; iPoints++;
+      if (myGame.get_score(TEAM_LEFT) < 21) {
+        myGame.add_points(TEAM_LEFT, 1);
       }
     }
     
     if (sButtons == "1100") {
-      if (score_board[0] > 0) {
-        score_board[0] -= 1; score_update = true;  iPoints--;
+      if (myGame.get_score(TEAM_LEFT) > 0) {
+        myGame.take_points(TEAM_LEFT, 1);
       }
     }
 
     // Players 3 and 4
     if (sButtons == "0010" || sButtons == "0001") {
-      if (score_board[1] < 21) {
-        score_board[1] += 1; score_update = true;  iPoints++;
+      if (myGame.get_score(TEAM_RIGHT) < 21) {
+        myGame.add_points(TEAM_RIGHT, 1);
       }
     }
     
     if (sButtons == "0011") {
-      if (score_board[1] > 0) {
-        score_board[1] -= 1; score_update = true;  iPoints--;
+      if (myGame.get_score(TEAM_RIGHT) > 0) {
+        myGame.take_points(TEAM_RIGHT, 1);
       }
     }
     
     // Functions
     if (sButtons == "1111") {
-      score_board[0] = 0;
-      score_board[1] = 0;
-      sHistory = "";
-      score_update = true;
+      myGame.reset();
     }
   } else {
-    if (sButtons == "1000" || sButtons == "0100") { iDirection = 0; score_update = true; bGameOn = true; }
-    if (sButtons == "0010" || sButtons == "0001") { iDirection = 1; score_update = true; bGameOn = true; }
+    if (sButtons == "1000" || sButtons == "0100") { myGame.start(0); }
+    if (sButtons == "0010" || sButtons == "0001") { myGame.start(1); }
   }
   button_pressed = false;
-}
-
-void update_score_board() {
-  if (score_update) {
-    debug((String)score_board[0] + " - " + (String)score_board[1] + " [" + (String)sHistory + "]");
-    score_update = false;
-  }
 }
 
 /* ---------------------------------- */
@@ -245,12 +199,4 @@ void get_button_states() {
   sButtons= sButtons + (int)button_state;
   }
   sHistory = sHistory.substring(0,HISTORY_LENGTH); // force history to only hold HISTORY_LENGTH previous button presses
-}
-
-/* ---------------------------------- */
-// void debug()
-// print debug messages to the seri
-/* ---------------------------------- */
-void debug(String msg) {
-  Serial.println(msg);
 }
