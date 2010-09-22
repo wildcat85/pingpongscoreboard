@@ -4,7 +4,7 @@
 #include "Display.h"
 
 // Initialise constants - These babies won't change
-const String VERSION = "v01g";
+const String VERSION = "0.1a";
 const int P1_BUTTON = 36;         // the number of the pushbutton pin
 const int P2_BUTTON = 48;         // the number of the pushbutton pin
 const int P3_BUTTON = 44;         // the number of the pushbutton pin
@@ -19,9 +19,9 @@ boolean score_update = false;
 String sHistory = "";
 String sButtons = "0000";
 char cChar[0];
-int iPoints = 5;
+int iPoints = 0;
 int score_board[] = {0,0};
-boolean iDirection = true;
+boolean iDirection;
 Display myDisplay = Display();
 
 /* ---------------------------------- */
@@ -88,8 +88,7 @@ void flash() {
 }
 
 void draw_arrow(int _iDirection) {
-//  myDisplay.clear_buffers(true);
-  myDisplay.set_ink(0,10,0);
+  myDisplay.set_ink(0,15,0);
   myDisplay.sendCMD(0x12, CMD_CLEAR_PAPER);
   if (_iDirection) {
     myDisplay.draw_pixel(0x12, 1, 2);
@@ -103,7 +102,7 @@ void draw_arrow(int _iDirection) {
     myDisplay.draw_pixel(0x12, 5, 6);
   }
   myDisplay.draw_square(0x12, 0, 3, 7, 4);
-  myDisplay.set_ink(10,0,0);
+  myDisplay.set_ink(15,0,0);
 }
 
 /* ---------------------------------- */
@@ -119,6 +118,7 @@ void update_score_board(int* score) {
   double dFract, dInt;
   String sNum;
   static int score_board_old[] = {-1,-1};
+  static int iArrow = -1;
 
   debug("refreshing score board");
 
@@ -134,12 +134,11 @@ void update_score_board(int* score) {
     myDisplay.character(0x14, 1, 0, sNum[1], true);
   }
   
-  if (iPoints == 5) {
-    iPoints = 0;
+  if (floor(iPoints/5) != iArrow) {
     iDirection = !iDirection;
     draw_arrow(iDirection);
+    iArrow = floor(iPoints/5);
   }
-  
 
   myDisplay.swap_buffers();
   
@@ -160,12 +159,30 @@ void process_button_presses() {
 
   if (bGameOn) {
     // Players 1 and 2
-    if (sButtons == "1000" || sButtons == "0100") { score_board[0] += 1; score_update = true; iPoints++; }
-    if (sButtons == "1100") { if (score_board[0] > 0) { score_board[0] -= 1; score_update = true;  iPoints--; } }
+    if (sButtons == "1000" || sButtons == "0100") {
+      if (score_board[0] < 21) {
+        score_board[0] += 1; score_update = true; iPoints++;
+      }
+    }
+    
+    if (sButtons == "1100") {
+      if (score_board[0] > 0) {
+        score_board[0] -= 1; score_update = true;  iPoints--;
+      }
+    }
 
     // Players 3 and 4
-    if (sButtons == "0010" || sButtons == "0001") { score_board[1] += 1; score_update = true;  iPoints++; }
-    if (sButtons == "0011") { if (score_board[1] > 0) { score_board[1] -= 1; score_update = true;  iPoints--; } }
+    if (sButtons == "0010" || sButtons == "0001") {
+      if (score_board[1] < 21) {
+        score_board[1] += 1; score_update = true;  iPoints++;
+      }
+    }
+    
+    if (sButtons == "0011") {
+      if (score_board[1] > 0) {
+        score_board[1] -= 1; score_update = true;  iPoints--;
+      }
+    }
     
     // Functions
     if (sButtons == "1111") {
@@ -175,8 +192,8 @@ void process_button_presses() {
       score_update = true;
     }
   } else {
-    if (sButtons == "1000" || sButtons == "0100") { iDirection = 1; score_update = true; bGameOn = true; }
-    if (sButtons == "0010" || sButtons == "0001") { iDirection = 0; score_update = true; bGameOn = true; }
+    if (sButtons == "1000" || sButtons == "0100") { iDirection = 0; score_update = true; bGameOn = true; }
+    if (sButtons == "0010" || sButtons == "0001") { iDirection = 1; score_update = true; bGameOn = true; }
   }
   button_pressed = false;
 }

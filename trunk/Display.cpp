@@ -100,7 +100,6 @@ void Display::show_word(String sWord, int iPosition, boolean bForce) {
   }
   
   for (int iCount = 0; iCount < sWord.length(); iCount++) {
-
     iDotDeduct = 0;
 
     if (strchr("!ITil ", sWord[iCount]) != NULL) {       // 2 front 2 back
@@ -148,7 +147,21 @@ unsigned char Display::toByte(int i) {
   return map(i, -128, 127, 0, 255);
 }
 
+char *replace_str(char *str, char *orig, char *rep)
+{
+  static char buffer[4096];
+  char *p;
 
+  if(!(p = strstr(str, orig)))  // Is 'orig' even in 'str'?
+    return str;
+
+  strncpy(buffer, str, p-str); // Copy characters from 'str' start to 'orig' st$
+  buffer[p-str] = '\0';
+
+  sprintf(buffer+(p-str), "%s%s", rep, p+strlen(orig));
+
+  return buffer;
+}
 
 void Display::sendCMD(byte address, byte CMD, ... ) {
   int i;
