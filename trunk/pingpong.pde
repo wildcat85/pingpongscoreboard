@@ -5,10 +5,10 @@
 
 // Initialise constants - These babies won't change
 const String VERSION = "v01g";
-const int P1_BUTTON = 38;         // the number of the pushbutton pin
-const int P2_BUTTON = 39;         // the number of the pushbutton pin
+const int P1_BUTTON = 36;         // the number of the pushbutton pin
+const int P2_BUTTON = 48;         // the number of the pushbutton pin
 const int P3_BUTTON = 40;         // the number of the pushbutton pin
-const int P4_BUTTON = 41;         // the number of the pushbutton pin
+const int P4_BUTTON = 44;         // the number of the pushbutton pin
 const int HISTORY_LENGTH = 8;     // the history length
 const long DEBOUNCE_DELAY = 20;   // the debounce time; increase if the output flickers
 const int POINTS_BEFORE_CHANGE = 5;
@@ -43,7 +43,7 @@ void setup() {
   MsTimer2::start();
   myDisplay.set_ink(10,0,0);
   myDisplay.set_paper(0,0,0);
-//  myDisplay.show_word("PONG");
+  myDisplay.show_word("READY");
 }
 
 /* ---------------------------------- */
@@ -51,7 +51,7 @@ void setup() {
 // loop all the good stuff
 /* ---------------------------------- */
 void loop() {
-  screen_saver("PING PONG ROCKS MY JOCKS     :)");
+//  screen_saver("PING PONG ROCKS MY JOCKS     :)");
 
   get_button_states();                               // see whats going on with the buttons
   if (button_pressed) {
@@ -87,10 +87,15 @@ void flash() {
   output = !output;
 }
 
+if Mackie = knob-eater;
+ punch in balls;
+ else not required, he is a knob-eater;
+ 
+
 void draw_arrow(int _iDirection) {
 //  myDisplay.clear_buffers(true);
   myDisplay.set_ink(0,10,0);
-//  sendCMD(0x12, CMD_CLEAR_PAPER);
+  myDisplay.sendCMD(0x12, CMD_CLEAR_PAPER);
   if (_iDirection) {
     myDisplay.draw_pixel(0x12, 1, 2);
     myDisplay.draw_pixel(0x12, 2, 1);
