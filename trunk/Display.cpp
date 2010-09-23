@@ -71,7 +71,8 @@ void Display::set_paper(int iR, int iG, int iB) {
 void Display::draw_row_mask(int iAddr, int iRow, int iXoffset, byte bBitmask) {
   Serial.println(__func__);
   Serial.println(bBitmask, HEX);
-  sendCMD(iAddr, CMD_DRAW_ROW_MASK, iRow, iXoffset, bBitmask);
+  sendCMD(iAddr, CMD_DRAW_ROW_MASK, toByte(iRow), toByte(iXoffset), bBitmask);
+  this->changed[iAddr-16] = true;
 }
 
 void Display::character(int iAddr, int iX, int iY, char cChar, boolean bClearBuffer) {

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <MsTimer2.h>
+//#include <MsTimer2.h>
 #include <Wire.h>
 #include "Display.h"
 #include "Game.h"
@@ -15,11 +15,9 @@ const long DEBOUNCE_DELAY = 20;   // the debounce time; increase if the output f
 const int POINTS_BEFORE_CHANGE = 5;
 
 // Initialise variables - These babies will change
-boolean button_pressed = false;
 String sHistory = "";
 String sButtons = "0000";
 char cChar[0];
-//boolean iDirection;
 Display myDisplay = Display();
 Game myGame = Game();
 
@@ -49,31 +47,21 @@ void setup() {
 // loop all the good stuff
 /* ---------------------------------- */
 void loop() {
-//  screen_saver("PING PONG ROCKS MY JOCKS     :)");
-
-  get_button_states();                               // see whats going on with the buttons
-  if (button_pressed) {
+  if (get_button_states()) {
     process_button_presses();                                  // process button presses
     update_score_board();
   }
-
 }
 
 void draw_arrow(int _iDirection) {
+  char Arrow[2][8] = {{0x00, 0x04, 0x02, 0xFF, 0xFF, 0x02, 0x04, 0x00},
+                      {0x00, 0x20, 0x40, 0xFF, 0xFF, 0x40, 0x20, 0x00}};
+
   myDisplay.set_ink(0,15,0);
   myDisplay.sendCMD(0x12, CMD_CLEAR_PAPER);
-  if (_iDirection) {
-    myDisplay.draw_pixel(0x12, 1, 2);
-    myDisplay.draw_pixel(0x12, 2, 1);
-    myDisplay.draw_pixel(0x12, 1, 5);
-    myDisplay.draw_pixel(0x12, 2, 6);
-  } else {
-    myDisplay.draw_pixel(0x12, 6, 2);
-    myDisplay.draw_pixel(0x12, 5, 1);
-    myDisplay.draw_pixel(0x12, 6, 5);
-    myDisplay.draw_pixel(0x12, 5, 6);
+  for (int row=7; row>=0; row--) {      
+      myDisplay.draw_row_mask(0x12, row, 0, Arrow[_iDirection][row]);
   }
-  myDisplay.draw_square(0x12, 0, 3, 7, 4);
   myDisplay.set_ink(15,0,0);
 }
 
@@ -156,16 +144,16 @@ void process_button_presses() {
     if (sButtons == "1000" || sButtons == "0100") { myGame.start(0); }
     if (sButtons == "0010" || sButtons == "0001") { myGame.start(1); }
   }
-  button_pressed = false;
 }
 
 /* ---------------------------------- */
 // void get_button_states()
 // get current button states
 /* ---------------------------------- */
-void get_button_states() {
+boolean get_button_states() {
   static int button_states[] = {LOW,LOW,LOW,LOW};
   static int button_state;
+  boolean result = false;
   static long lastDebounceTime = 0;  // the last time the output pin was toggled
 
   sButtons = "";
@@ -189,7 +177,7 @@ void get_button_states() {
       button_states[iCount] = button_state;
       if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY) {
         button_states[iCount] = button_state;
-        button_pressed = true;
+        result = true;
         sHistory = (iCount+1) + sHistory;
       }
     } else if (button_state == LOW && button_states[iCount] == HIGH) {
@@ -199,4 +187,5 @@ void get_button_states() {
   sButtons= sButtons + (int)button_state;
   }
   sHistory = sHistory.substring(0,HISTORY_LENGTH); // force history to only hold HISTORY_LENGTH previous button presses
+  return result;
 }

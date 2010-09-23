@@ -8,10 +8,12 @@ Game::Game() {
 
 void Game::start(boolean bTeam) {
   Serial.println(__func__);
-  iPoints = 0;
+  iGamePoints = 0;
   iScore_Left = 0;
   iScore_Right = 0;
   set_direction(bTeam);
+  bScore_Left_Changed=true;
+  bScore_Right_Changed=true;
   GameOn = true;
 }
 
@@ -26,7 +28,7 @@ int Game::get_score(boolean bTeam) {
 
 int Game::get_points() {
   Serial.println(__func__);
-  return iPoints;
+  return iGamePoints;
 }
 
 int Game::get_direction() {
@@ -46,12 +48,12 @@ boolean Game::score_changed(boolean bTeam) {
 void Game::add_points(boolean bTeam, int iPoints) {
   Serial.println(__func__);
   if (bTeam) { iScore_Left++; bScore_Left_Changed=true; } else { iScore_Right++; bScore_Right_Changed=true; } 
-  iPoints++;
+  iGamePoints++;
 }
 
 void Game::take_points(boolean bTeam, int iPoints) {
   Serial.println(__func__);
   if (bTeam) { iScore_Left--; bScore_Left_Changed=true; } else { iScore_Right--; bScore_Right_Changed=true; } 
-  iPoints--;
+  iGamePoints--;
 }
 
