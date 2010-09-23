@@ -24,7 +24,7 @@ class Game {
   boolean GameOn;
   
   private:
-  int iPoints;
+  int iGamePoints;
   int iScore_Left;
   int iScore_Right;
   int iDirection;
