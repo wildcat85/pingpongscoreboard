@@ -19,11 +19,12 @@ const int Display::iPanel[] = {0x10, 0x11, 0x12, 0x13, 0x14};
 boolean Display::changed[] = {0,0,0,0,0};
 
 Display::Display() {
+  Serial.println("Initialising Display class");
   RainbowCMD[0] = 'r';
 }
 
 void Display::swap_buffers(boolean bAll) {
-  Serial.println(__func__);
+//  Serial.println(__func__);
   for (int iCount=0x10; iCount <= 0x14; iCount++) {
     if (changed[iCount-16] || bAll) {
       sendCMD(iCount, CMD_SWAP_BUF);
@@ -33,7 +34,7 @@ void Display::swap_buffers(boolean bAll) {
 }
 
 void Display::clear_buffers(boolean bAll) {
-  Serial.println(__func__);
+//  Serial.println(__func__);
   for (int iCount=0x10; iCount <= 0x14; iCount++) {
     if (changed[iCount-16] || bAll) {
       sendCMD(iCount, CMD_CLEAR_PAPER);
@@ -43,49 +44,47 @@ void Display::clear_buffers(boolean bAll) {
 }
 
 void Display::draw_pixel(int iAddr, int iX, int iY) {
-  Serial.println(__func__);
+//  Serial.println(__func__);
   this->changed[iAddr-16] = true;
   sendCMD(iAddr, CMD_DRAW_PIXEL, toByte(iX), toByte(iY));
 }
 
 void Display::draw_square(int iAddr, int iX1, int iY1, int iX2, int iY2) {
-  Serial.println(__func__);
+//  Serial.println(__func__);
   this->changed[iAddr-16] = true;
   sendCMD(iAddr, CMD_DRAW_SQUARE, toByte(iX1), toByte(iY1), toByte(iX2), toByte(iY2));
 }
 
 void Display::set_ink(int iR, int iG, int iB) {
-  Serial.println(__func__);
+//  Serial.println(__func__);
   for (int iCount=0x10; iCount <= 0x14; iCount++) {
     sendCMD(iCount, CMD_SET_INK, iR, iG, iB);
   }
 }
 
 void Display::set_paper(int iR, int iG, int iB) {
-  Serial.println(__func__);
+//  Serial.println(__func__);
   for (int iCount=0x10; iCount <= 0x14; iCount++) {
     sendCMD(iCount, CMD_SET_PAPER, iR, iG, iB);
   }
 }
 
 void Display::draw_row_mask(int iAddr, int iRow, int iXoffset, byte bBitmask) {
-  Serial.println(__func__);
-  Serial.println(bBitmask, HEX);
+//  Serial.println(__func__);
   sendCMD(iAddr, CMD_DRAW_ROW_MASK, toByte(iRow), toByte(iXoffset), bBitmask);
   this->changed[iAddr-16] = true;
 }
 
 void Display::character(int iAddr, int iX, int iY, char cChar, boolean bClearBuffer) {
-  char ascii[100];
 //  Serial.println(__func__);
-//  sprintf(ascii,"char: %c = 0x%x - %i - %i", cChar, iAddr, iX, iY);
-//  Serial.println(ascii);
+  char ascii[100];
   this->changed[iAddr-16] = true;
   if (bClearBuffer) sendCMD(iAddr, CMD_CLEAR_PAPER);
   sendCMD(iAddr, CMD_PRINT_CHAR, toByte(iX), toByte(iY), cChar);
 }
 
 void Display::screen_saver(String sScrollText) {
+//  Serial.println(__func__);
   static long previousMillis = 0;        // will store last time LED was updated
   static int iScroll = 60;
   long interval = 50;           // interval at which to blink (milliseconds)
@@ -103,38 +102,58 @@ void Display::screen_saver(String sScrollText) {
   }
 }
 
+void Display::getCharGaps(int aGaps[], char cChar) {
+//  Serial.println(__func__);
+  aGaps[0] = 0; aGaps[1] = 0;
+  
+    if (strchr("!ITil ", cChar) != NULL) {       // 2 front 2 back
+      aGaps[0] = 2;
+      aGaps[1] = 1;
+    } else if (strchr("Y1", cChar) != NULL) {  // 1 front 1 back
+      aGaps[0] = 1;
+      aGaps[1] = 0;
+    } else if (strchr("jtyz", cChar) != NULL) {  // 0 front 2 back
+      aGaps[0] = 0;
+      aGaps[1] = 1;
+    } else if (strchr(":", cChar) != NULL) {  // 2 front 4 back
+      aGaps[0] = 2;
+      aGaps[1] = 3;
+    }
+//  Serial.println(aGaps[0]);
+}
+
 void Display::show_word(String sWord, int iPosition, boolean bForce) {
-  Serial.println(__func__);
+//  Serial.println(__func__);
   char ascii[100];
 
   int iDisplay;
   int iDot;
   int iDotDeduct = 0;
   int iLetterWidth = 7;
+  int iWordAdjust = 0;
+  int aGaps[2];
  
   this->clear_buffers(true);
   
   if (!bForce) {
-    iPosition = (40/2) - ((sWord.length()*iLetterWidth)/2)-1;// + (sWord.length()-1);
+    for (int iCount = 0; iCount < sWord.length(); iCount++) {
+      getCharGaps(aGaps, sWord[iCount]);
+      iWordAdjust += aGaps[0];
+      iWordAdjust += aGaps[1];
+      iWordAdjust = iWordAdjust;
+    }
+    iPosition = (40/2) - ((sWord.length()*iLetterWidth/2))-1;
+    iPosition += floor(iWordAdjust/2);
   }
   
   for (int iCount = 0; iCount < sWord.length(); iCount++) {
     iDotDeduct = 0;
-
-    if (strchr("!ITil ", sWord[iCount]) != NULL) {       // 2 front 2 back
-      iPosition--; 
-      iPosition--;
-      iDotDeduct = 1;
-    } else if (strchr("Y1", sWord[iCount]) != NULL) {  // 1 front 1 back
-      iPosition--;
-    } else if (strchr("jtyz", sWord[iCount]) != NULL) {  // 0 front 2 back
-      iDotDeduct = 1;
-    } else if (strchr(":", sWord[iCount]) != NULL) {  // 2 front 4 back
-      iPosition--; 
-      iPosition--;
-      iDotDeduct = 3;
-    }
     
+    getCharGaps(aGaps, sWord[iCount]);
+    
+    iPosition -= aGaps[0];
+    iDotDeduct = aGaps[1];
+
     iDisplay = floor((iPosition+(iCount*(iLetterWidth+1)))/8);
     if (((iPosition+(iCount*(iLetterWidth+1)))%8) == 0) {
       iDisplay--;
@@ -143,16 +162,11 @@ void Display::show_word(String sWord, int iPosition, boolean bForce) {
     iDot -= (8*iDisplay)+1;
 
 
-//    sprintf(ascii,"iDot %i = %i - %i [%i] (%i)", iDot, iPosition+(iCount*(iLetterWidth+1)), (8*iDisplay)-3, iDisplay, iDotDeduct);
-//    Serial.println(ascii);
-    
     if (iDisplay > -1 && iDisplay < 5 && iDot < (iLetterWidth+1) && iDot > -7) {
-//      Serial.print("1: ");
       this->character(this->iPanel[iDisplay], iDot, 0, sWord[iCount], false);
     }
   
     if (iDisplay > -2 && iDisplay < 4 && iDot > 1) {
-//      Serial.print("2: ");
       this->character(this->iPanel[iDisplay+1], iDot-8, 0, sWord[iCount], false);
     }
   iPosition -= iDotDeduct;

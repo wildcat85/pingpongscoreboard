@@ -17,7 +17,11 @@ const int POINTS_BEFORE_CHANGE = 5;
 // Initialise variables - These babies will change
 String sHistory = "";
 String sButtons = "0000";
-char cChar[0];
+long buttonHeldTime = 0;
+int buttonHeldOwner = 0;
+boolean bFiveClaimedDirection = false;
+boolean buttonHeld = false;
+boolean bFiveClaimed = false;
 Display myDisplay = Display();
 Game myGame = Game();
 
@@ -47,6 +51,16 @@ void setup() {
 // loop all the good stuff
 /* ---------------------------------- */
 void loop() {
+  if (buttonHeld) {
+    if (millis() - buttonHeldTime > 1000) {
+      Serial.print("5 points claimed by player ");
+      Serial.println(buttonHeldOwner);
+      myDisplay.show_word("FIVE?");
+      buttonHeld = false;
+      bFiveClaimed = true;
+      bFiveClaimedDirection = true;
+    }
+  }
   if (get_button_states()) {
     process_button_presses();                                  // process button presses
     update_score_board();
@@ -92,6 +106,10 @@ void update_score_board() {
     myDisplay.character(0x14, 1, 0, sNum[1], true);
   }
   
+  if (bFiveClaimedDirection) {
+    iArrow = !iArrow;
+    bFiveClaimedDirection = false;
+  }
   if (floor(iPoints/POINTS_BEFORE_CHANGE) != iArrow) {
     myGame.set_direction(!iDirection);
     draw_arrow(!iDirection);
@@ -109,35 +127,49 @@ void update_score_board() {
 // calculate scores and update score board
 /* ---------------------------------- */
 void process_button_presses() {
+  int iTeam;
+  
   if (myGame.GameOn) {
+    if (bFiveClaimed) {
+      Serial.println(buttonHeldOwner);
+      Serial.println(sButtons);
+      if (buttonHeldOwner == 1 || buttonHeldOwner == 2) {
+        Serial.println("here");
+        iTeam = TEAM_LEFT;
+        if (sButtons == "0010" || sButtons == "0001") {
+          Serial.println("5 points PASSED");
+          myGame.adjust_points(iTeam, 4);
+        } else {
+          Serial.println("5 points FAILED");
+          myGame.adjust_points(iTeam, -1);
+        }
+      } else {
+        iTeam = TEAM_RIGHT;
+        if (sButtons == "1000" || sButtons == "0100") {
+          Serial.println("5 points PASSED");
+          myGame.adjust_points(iTeam, 4);
+        } else {
+          Serial.println("5 points FAILED");
+          myGame.adjust_points(iTeam, -1);
+        }
+      }
+      draw_arrow(myGame.get_direction());
+      bFiveClaimed = false;
+    } else
     // Players 1 and 2
     if (sButtons == "1000" || sButtons == "0100") {
-      if (myGame.get_score(TEAM_LEFT) < 21) {
-        myGame.add_points(TEAM_LEFT, 1);
-      }
-    }
-    
-    if (sButtons == "1100") {
-      if (myGame.get_score(TEAM_LEFT) > 0) {
-        myGame.take_points(TEAM_LEFT, 1);
-      }
-    }
-
-    // Players 3 and 4
-    if (sButtons == "0010" || sButtons == "0001") {
-      if (myGame.get_score(TEAM_RIGHT) < 21) {
-        myGame.add_points(TEAM_RIGHT, 1);
-      }
-    }
-    
-    if (sButtons == "0011") {
-      if (myGame.get_score(TEAM_RIGHT) > 0) {
-        myGame.take_points(TEAM_RIGHT, 1);
-      }
-    }
-    
-    // Functions
-    if (sButtons == "1111") {
+      iTeam = TEAM_LEFT;
+      myGame.adjust_points(iTeam, 1);
+    } else if (sButtons == "1100") {
+      iTeam = TEAM_LEFT;
+      myGame.adjust_points(iTeam, -1);
+    } else if (sButtons == "0010" || sButtons == "0001") {     // Players 3 and 4
+      iTeam = TEAM_RIGHT;
+      myGame.adjust_points(iTeam, 1);
+    } else if (sButtons == "0011") {
+      iTeam = TEAM_RIGHT;
+      myGame.adjust_points(iTeam, -1);
+    } else if (sButtons == "1111") { // Functions
       myGame.reset();
     }
   } else {
@@ -151,7 +183,7 @@ void process_button_presses() {
 // get current button states
 /* ---------------------------------- */
 boolean get_button_states() {
-  static int button_states[] = {LOW,LOW,LOW,LOW};
+  static int button_states[4] = {LOW,LOW,LOW,LOW};
   static int button_state;
   boolean result = false;
   static long lastDebounceTime = 0;  // the last time the output pin was toggled
@@ -174,6 +206,11 @@ boolean get_button_states() {
     }
 
     if (button_state == HIGH && button_states[iCount] == LOW) {
+      if (!buttonHeld && !bFiveClaimed) {
+        buttonHeld = true;
+        buttonHeldOwner = iCount+1;
+      }
+      buttonHeldTime = millis();
       button_states[iCount] = button_state;
       if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY) {
         button_states[iCount] = button_state;
@@ -183,6 +220,8 @@ boolean get_button_states() {
     } else if (button_state == LOW && button_states[iCount] == HIGH) {
       lastDebounceTime = millis();
       button_states[iCount] = button_state;
+      buttonHeldTime = 0;
+      buttonHeld = false;
     }
   sButtons= sButtons + (int)button_state;
   }
