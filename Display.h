@@ -1,3 +1,9 @@
+/*
+
+  Display.h - Display class for custom Rainbowduino setup
+  Daniel Mackie <eikcam@gmail.com>
+
+*/
 #ifndef Display_h
 #define Display_h
 

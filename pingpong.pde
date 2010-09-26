@@ -1,3 +1,10 @@
+/*
+
+  pingpong.pde - Ping Pong Score Board
+  Daniel Mackie <eikcam@gmail.com>
+
+*/
+
 #include <stdio.h>
 //#include <MsTimer2.h>
 #include <Wire.h>

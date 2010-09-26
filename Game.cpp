@@ -1,3 +1,9 @@
+/*
+
+  Game.cpp - Game class for custom Ping Pong Score Board
+  Daniel Mackie <eikcam@gmail.com>
+
+*/
 #include "WProgram.h"
 #include "Game.h"
 //#include <Wire.h>
