@@ -14,8 +14,7 @@ class Game {
   Game();
   void start(boolean bTeam);
   void reset();
-  void add_points(boolean bTeam, int iPoints);
-  void take_points(boolean bTeam, int iPoints);
+  void adjust_points(boolean bTeam, int iPoints);
   int get_score(boolean bTeam);
   int get_points();
   int get_direction();

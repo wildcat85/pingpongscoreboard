@@ -38,6 +38,7 @@ class Display {
   void draw_row_mask(int iAddr, int iRow, int iXoffset, byte bBitmask);
   void show_word(String sWord, int iPosition = 1, boolean bForce = false);
   void screen_saver(String sScrollText);
+  void getCharGaps(int aGaps[], char cChar);
   char *replace_str(char *str, char *orig, char *rep);
   static const int CMD_totalArgs[];
   static const int iPanel[];
