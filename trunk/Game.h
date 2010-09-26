@@ -1,3 +1,9 @@
+/*
+
+  Game.h - Game class for custom Ping Pong Score Board
+  Daniel Mackie <eikcam@gmail.com>
+
+*/
 #ifndef Game_h
 #define Game_h
 

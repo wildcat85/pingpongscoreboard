@@ -1,3 +1,10 @@
+/*
+
+  Display.cpp - Display class for custom Rainbowduino setup
+  Daniel Mackie <eikcam@gmail.com>
+
+*/
+
 #include "WProgram.h"
 #include "Display.h"
 #include <Wire.h>
