@@ -25,11 +25,20 @@ const int Display::CMD_totalArgs[] = {
 const int Display::iPanel[] = {0x10, 0x11, 0x12, 0x13, 0x14};
 boolean Display::changed[] = {0,0,0,0,0};
 
+/*
+  Display()
+*/
+
 Display::Display() {
   Serial.println("Initialising Display class");
   RainbowCMD[0] = 'r';
 }
 
+/*
+  swap_buffers(boolean bAll)
+  Swaps the buffers of displays that have been modified.
+  Can force a full display buffer swap by setting bAll = true.
+*/
 void Display::swap_buffers(boolean bAll) {
 //  Serial.println(__func__);
   for (int iCount=0x10; iCount <= 0x14; iCount++) {
@@ -40,6 +49,11 @@ void Display::swap_buffers(boolean bAll) {
   }
 }
 
+/*
+  swap_buffers(boolean bAll)
+  Clears the buffers of displays that have been modified.
+  Can force a full display buffer clear by setting bAll = true.
+*/
 void Display::clear_buffers(boolean bAll) {
 //  Serial.println(__func__);
   for (int iCount=0x10; iCount <= 0x14; iCount++) {
@@ -50,18 +64,30 @@ void Display::clear_buffers(boolean bAll) {
   }
 }
 
+/*
+  swap_buffers(boolean bAll)
+  Draws a pixel and sets the receiving display as changed.
+*/
 void Display::draw_pixel(int iAddr, int iX, int iY) {
 //  Serial.println(__func__);
   this->changed[iAddr-16] = true;
   sendCMD(iAddr, CMD_DRAW_PIXEL, toByte(iX), toByte(iY));
 }
 
+/*
+  swap_buffers(boolean bAll)
+  Draws a square and sets the receiving display as changed.
+*/
 void Display::draw_square(int iAddr, int iX1, int iY1, int iX2, int iY2) {
 //  Serial.println(__func__);
   this->changed[iAddr-16] = true;
   sendCMD(iAddr, CMD_DRAW_SQUARE, toByte(iX1), toByte(iY1), toByte(iX2), toByte(iY2));
 }
 
+/*
+  swap_buffers(boolean bAll)
+  Sets the ink of all the displays.
+*/
 void Display::set_ink(int iR, int iG, int iB) {
 //  Serial.println(__func__);
   for (int iCount=0x10; iCount <= 0x14; iCount++) {
@@ -69,6 +95,10 @@ void Display::set_ink(int iR, int iG, int iB) {
   }
 }
 
+/*
+  swap_buffers(boolean bAll)
+  Sets the paper of all the displays.
+*/
 void Display::set_paper(int iR, int iG, int iB) {
 //  Serial.println(__func__);
   for (int iCount=0x10; iCount <= 0x14; iCount++) {
@@ -76,12 +106,22 @@ void Display::set_paper(int iR, int iG, int iB) {
   }
 }
 
+/*
+  swap_buffers(boolean bAll)
+  Draws the bitmask of bBitmask.
+*/
+
 void Display::draw_row_mask(int iAddr, int iRow, int iXoffset, byte bBitmask) {
 //  Serial.println(__func__);
   sendCMD(iAddr, CMD_DRAW_ROW_MASK, toByte(iRow), toByte(iXoffset), bBitmask);
   this->changed[iAddr-16] = true;
 }
 
+/*
+  swap_buffers(boolean bAll)
+  Displays a character on the addressed display.
+  Can clear buffer before character draw by setting bClearBuffer = true.
+*/
 void Display::character(int iAddr, int iX, int iY, char cChar, boolean bClearBuffer) {
 //  Serial.println(__func__);
   char ascii[100];
@@ -90,6 +130,12 @@ void Display::character(int iAddr, int iX, int iY, char cChar, boolean bClearBuf
   sendCMD(iAddr, CMD_PRINT_CHAR, toByte(iX), toByte(iY), cChar);
 }
 
+/*
+  screen_saver(String sScrollText)
+  Scrolls sScrollText from right to left on all cascaded displays.
+  Future improvements will allow a lot more variables such as speed,
+  direction and alike.
+*/
 void Display::screen_saver(String sScrollText) {
 //  Serial.println(__func__);
   static long previousMillis = 0;        // will store last time LED was updated
@@ -109,6 +155,14 @@ void Display::screen_saver(String sScrollText) {
   }
 }
 
+/*
+  getCharGaps(int aGaps[], char cChar)
+  Gets the front and back gaps of a character.
+  Not all of the font characters are the same size. This makes text appear to have bigger gaps
+  between some of the characters. eg. READY. READ character width is 7 but Y is only 6. This makes
+  the gap between D and Y larger than the other characters. This function reads the gaps and compensates by
+  shifting the character left depending on the gap.
+*/
 void Display::getCharGaps(int aGaps[], char cChar) {
 //  Serial.println(__func__);
   aGaps[0] = 0; aGaps[1] = 0;
@@ -126,9 +180,18 @@ void Display::getCharGaps(int aGaps[], char cChar) {
       aGaps[0] = 2;
       aGaps[1] = 3;
     }
-//  Serial.println(aGaps[0]);
 }
 
+/*
+  show_word(String sWord, int iPosition, boolean bForce)
+  Displays a word on the displays.
+  If iPosition is not specified, the word is centered on all the cascaded displays.
+  If iPosition is specified and bForce = true, then the word will be displayed at iPosition.
+  I have 5 displays. This gives me 40 positions to put text.
+  
+  This routine will span characters over multiple displays. It also ensures that a character
+  is not processed by a display if it is not actually displaying it.
+*/
 void Display::show_word(String sWord, int iPosition, boolean bForce) {
 //  Serial.println(__func__);
   char ascii[100];
