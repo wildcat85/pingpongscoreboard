@@ -13,18 +13,11 @@
 
 // Initialise constants - These babies won't change
 const String VERSION = "0.1a";
-const int HISTORY_LENGTH = 8;     // the history length
-const long DEBOUNCE_DELAY = 20;   // the debounce time; increase if the output flickers
 const int POINTS_BEFORE_CHANGE = 5;
 
 // Initialise variables - These babies will change
 String sHistory = "";
-String sButtons = "0000";
-long buttonHeldTime = 0;
-int buttonHeldOwner = 0;
 boolean bFiveClaimedDirection = false;
-boolean buttonHeld = false;
-boolean bFiveClaimed = false;
 Buttons myButtons;
 Display myDisplay;
 Game myGame;
@@ -49,18 +42,20 @@ void setup() {
 // loop all the good stuff
 /* ---------------------------------- */
 void loop() {
-  if (buttonHeld) {
-    if (millis() - buttonHeldTime > 1000) {
+  String sButtons;
+  
+  if (myButtons.buttonHeld) {
+    if (millis() - myButtons.buttonHeldTime > 1000) {
       Serial.print("5 points claimed by player ");
-      Serial.println(buttonHeldOwner);
+      Serial.println(myButtons.buttonHeldOwner);
       myDisplay.show_word("FIVE?");
-      buttonHeld = false;
-      bFiveClaimed = true;
+      myButtons.buttonHeld = false;
+      myButtons.bFiveClaimed = true;
       bFiveClaimedDirection = true;
     }
   }
-  if (get_button_states()) {
-    process_button_presses();                                  // process button presses
+  if (myButtons.get_button_states(sButtons)) {
+    process_button_presses(sButtons);                                  // process button presses
     update_score_board();
   }
 }
@@ -124,15 +119,12 @@ void update_score_board() {
 // void process_scores()
 // calculate scores and update score board
 /* ---------------------------------- */
-void process_button_presses() {
+void process_button_presses(String sButtons) {
   int iTeam;
   
   if (myGame.GameOn) {
-    if (bFiveClaimed) {
-      Serial.println(buttonHeldOwner);
-      Serial.println(sButtons);
-      if (buttonHeldOwner == 1 || buttonHeldOwner == 2) {
-        Serial.println("here");
+    if (myButtons.bFiveClaimed) {
+      if (myButtons.buttonHeldOwner == 1 || myButtons.buttonHeldOwner == 2) {
         iTeam = TEAM_LEFT;
         if (sButtons == "0010" || sButtons == "0001") {
           Serial.println("5 points PASSED");
@@ -152,7 +144,7 @@ void process_button_presses() {
         }
       }
       draw_arrow(myGame.get_direction());
-      bFiveClaimed = false;
+      myButtons.bFiveClaimed = false;
     } else
     // Players 1 and 2
     if (sButtons == "1000" || sButtons == "0100") {
@@ -176,41 +168,4 @@ void process_button_presses() {
   }
 }
 
-/* ---------------------------------- */
-// void get_button_states()
-// get current button states
-/* ---------------------------------- */
-boolean get_button_states() {
-  static int button_states[4] = {LOW,LOW,LOW,LOW};
-  static int button_state;
-  boolean result = false;
-  static long lastDebounceTime = 0;  // the last time the output pin was toggled
 
-  sButtons = "";
-  for (int iCount = 0; iCount < 4; iCount++) {
-
-    button_state = myButtons.getState(iCount);
-
-    if (button_state == HIGH && button_states[iCount] == LOW) {
-      if (!buttonHeld && !bFiveClaimed) {
-        buttonHeld = true;
-        buttonHeldOwner = iCount+1;
-      }
-      buttonHeldTime = millis();
-      button_states[iCount] = button_state;
-      if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY) {
-        button_states[iCount] = button_state;
-        result = true;
-        sHistory = (iCount+1) + sHistory;
-      }
-    } else if (button_state == LOW && button_states[iCount] == HIGH) {
-      lastDebounceTime = millis();
-      button_states[iCount] = button_state;
-      buttonHeldTime = 0;
-      buttonHeld = false;
-    }
-  sButtons= sButtons + (int)button_state;
-  }
-  sHistory = sHistory.substring(0,HISTORY_LENGTH); // force history to only hold HISTORY_LENGTH previous button presses
-  return result;
-}
