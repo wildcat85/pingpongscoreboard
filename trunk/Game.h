@@ -7,13 +7,10 @@
 #ifndef Game_h
 #define Game_h
 
+#include "WProgram.h"
+
 #define TEAM_LEFT          1
 #define TEAM_RIGHT         0
-
-
-//#include "WProgram.h"
-//#include <avr/pgmspace.h>
-//#include <Wire.h>
 
 class Game {
   public:

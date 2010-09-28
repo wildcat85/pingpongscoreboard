@@ -6,7 +6,6 @@
 */
 #include "WProgram.h"
 #include "Game.h"
-//#include <Wire.h>
 
 Game::Game() {
   Serial.println("Initialising Game class");
@@ -57,13 +56,13 @@ boolean Game::score_changed(boolean bTeam) {
 void Game::adjust_points(boolean bTeam, int iPoints) {
 //  Serial.println(__func__);
   int iScore = get_score(bTeam);
-  if (iScore+iPoints >= 0 && iScore+iPoints <= 21) {
+//  if (iScore+iPoints >= 0 && iScore+iPoints <= 21) {
     if (bTeam) {
       iScore_Left += iPoints; bScore_Left_Changed=true;
     } else {
       iScore_Right += iPoints; bScore_Right_Changed=true;
     }
     iGamePoints += iPoints;
-  }
+//  }
 }
 
