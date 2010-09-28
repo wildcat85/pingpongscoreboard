@@ -26,7 +26,6 @@
 #define CMD_DRAW_ROW_MASK     0x2B
 
 #include "WProgram.h"
-//#include <avr/pgmspace.h>
 #include <Wire.h>
 
 class Display {

@@ -6,17 +6,13 @@
 */
 
 #include <stdio.h>
-//#include <MsTimer2.h>
 #include <Wire.h>
+#include "Buttons.h"
 #include "Display.h"
 #include "Game.h"
 
 // Initialise constants - These babies won't change
 const String VERSION = "0.1a";
-const int P1_BUTTON = 36;         // the number of the pushbutton pin
-const int P2_BUTTON = 48;         // the number of the pushbutton pin
-const int P3_BUTTON = 44;         // the number of the pushbutton pin
-const int P4_BUTTON = 40;         // the number of the pushbutton pin
 const int HISTORY_LENGTH = 8;     // the history length
 const long DEBOUNCE_DELAY = 20;   // the debounce time; increase if the output flickers
 const int POINTS_BEFORE_CHANGE = 5;
@@ -29,8 +25,9 @@ int buttonHeldOwner = 0;
 boolean bFiveClaimedDirection = false;
 boolean buttonHeld = false;
 boolean bFiveClaimed = false;
-Display myDisplay = Display();
-Game myGame = Game();
+Buttons myButtons;
+Display myDisplay;
+Game myGame;
 
 /* ---------------------------------- */
 // void setup()
@@ -41,13 +38,7 @@ void setup() {
   Serial.begin(57600);                             // config serial as 57600 for some sweet serial monitor action
   Serial.println("PingPong v" + (String)VERSION);
   Serial.println("--------------");
-  pinMode(P1_BUTTON, INPUT);                       // set P1_BUTTON as an INPUT
-  pinMode(P2_BUTTON, INPUT);                       // set P2_BUTTON as an INPUT
-  pinMode(P3_BUTTON, INPUT);                       // set P3_BUTTON as an INPUT
-  pinMode(P4_BUTTON, INPUT);                       // set P4_BUTTON as an INPUT
-  pinMode(13, OUTPUT);
-//  MsTimer2::set(500, flash); // 500ms period
-//  MsTimer2::start();
+  myButtons.assignPlayers(36, 48, 44, 40);
   myDisplay.set_ink(15,0,0);
   myDisplay.set_paper(0,0,0);
   myDisplay.show_word("READY");
@@ -91,24 +82,23 @@ void draw_arrow(int _iDirection) {
 // formats score for score board and displays it
 /* ---------------------------------- */
 void update_score_board() {
-  double dFract, dInt;
   String sNum;
   static int iArrow = -1;
-  int iPoints, iScoreLeft, iScoreRight, iDirection;
+  int iPoints, iScore, iDirection;
 
-  iScoreLeft = myGame.get_score(TEAM_LEFT);
-  iScoreRight = myGame.get_score(TEAM_RIGHT);
   iDirection = myGame.get_direction();
   iPoints = myGame.get_points();
 
-  if (iScoreLeft < 10) sNum = "0" + (String)iScoreLeft; else sNum = (String)iScoreLeft;
   if (myGame.score_changed(TEAM_LEFT)) {
+    iScore = myGame.get_score(TEAM_LEFT);
+    if (iScore < 10) sNum = "0" + (String)iScore; else sNum = (String)iScore;
     myDisplay.character(0x10, 0, 0, sNum[0], true);
     myDisplay.character(0x11, 0, 0, sNum[1], true);
   }
   
-  if (iScoreRight < 10) sNum = "0" + (String)iScoreRight; else sNum = (String)iScoreRight;
   if (myGame.score_changed(TEAM_RIGHT)) {
+    iScore = myGame.get_score(TEAM_RIGHT);
+    if (iScore < 10) sNum = "0" + (String)iScore; else sNum = (String)iScore;
     myDisplay.character(0x13, 1, 0, sNum[0], true);
     myDisplay.character(0x14, 1, 0, sNum[1], true);
   }
@@ -117,6 +107,7 @@ void update_score_board() {
     iArrow = !iArrow;
     bFiveClaimedDirection = false;
   }
+  
   if (floor(iPoints/POINTS_BEFORE_CHANGE) != iArrow) {
     myGame.set_direction(!iDirection);
     draw_arrow(!iDirection);
@@ -197,20 +188,8 @@ boolean get_button_states() {
 
   sButtons = "";
   for (int iCount = 0; iCount < 4; iCount++) {
-    switch (iCount) {
-      case 0:
-        button_state = digitalRead(P1_BUTTON);
-        break;
-      case 1:
-        button_state = digitalRead(P2_BUTTON);
-        break;
-      case 2:
-        button_state = digitalRead(P3_BUTTON);
-        break;
-      case 3:
-        button_state = digitalRead(P4_BUTTON);
-        break;
-    }
+
+    button_state = myButtons.getState(iCount);
 
     if (button_state == HIGH && button_states[iCount] == LOW) {
       if (!buttonHeld && !bFiveClaimed) {
