@@ -44,7 +44,7 @@ void setup() {
 void loop() {
   String sButtons;
   
-  if (!myGame.GameOn) {myDisplay.screen_saver("READY", SCROLL_R2L); }
+  if (!myGame.GameOn) {myDisplay.screen_saver("PING PONG", SCROLL_R2L); }
 
   if (myButtons.buttonHeld) {
     if (millis() - myButtons.buttonHeldTime > 1000) {
@@ -96,7 +96,7 @@ void update_score_board() {
     if (iScore < 10) sNum = "0" + (String)iScore; else sNum = (String)iScore;
     myDisplay.character(0x10, 0, 0, sNum[0], true);
     myDisplay.character(0x11, 0, 0, sNum[1], true);
-    
+    if (myGame.get_winner() == TEAM_LEFT) { myDisplay.set_ink(15,0,0); }
   }
   
   if (myGame.score_changed(TEAM_RIGHT, true)) {
@@ -105,6 +105,7 @@ void update_score_board() {
     if (iScore < 10) sNum = "0" + (String)iScore; else sNum = (String)iScore;
     myDisplay.character(0x13, 1, 0, sNum[0], true);
     myDisplay.character(0x14, 1, 0, sNum[1], true);
+    if (myGame.get_winner() == TEAM_RIGHT) { myDisplay.set_ink(15,0,0); }
   }
   
   if (bFiveClaimedDirection) {
