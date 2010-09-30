@@ -19,6 +19,7 @@ void Game::start(boolean bTeam) {
   set_direction(bTeam);
   bScore_Left_Changed=true;
   bScore_Right_Changed=true;
+  iWinner = -1;
   GameOn = true;
 }
 
@@ -48,21 +49,44 @@ void Game::set_direction(boolean bTeam) {
   iDirection = bTeam;
 }
 
-boolean Game::score_changed(boolean bTeam) {
+boolean Game::score_changed(boolean bTeam, boolean reset) {
+  boolean result;  
 //  Serial.println(__func__);
-  if (bTeam) { return bScore_Left_Changed; } else { return bScore_Right_Changed; } 
+  if (bTeam) {
+    result = bScore_Left_Changed;
+    if (reset) { bScore_Left_Changed = false; }
+  } else {
+    result = bScore_Right_Changed;
+    if (reset) { bScore_Right_Changed = false; }
+  }
+  return result;
 }
 
 void Game::adjust_points(boolean bTeam, int iPoints) {
 //  Serial.println(__func__);
   int iScore = get_score(bTeam);
-//  if (iScore+iPoints >= 0 && iScore+iPoints <= 21) {
+  if (iWinner == -1) {
     if (bTeam) {
       iScore_Left += iPoints; bScore_Left_Changed=true;
     } else {
       iScore_Right += iPoints; bScore_Right_Changed=true;
     }
     iGamePoints += iPoints;
-//  }
+    check_scores();
+  }
+}
+
+void Game::check_scores() {
+  if (iScore_Left >= 21 && (iScore_Left - iScore_Right) >= 2) {
+    iWinner = TEAM_LEFT;
+  } else if (iScore_Right >= 21 && (iScore_Right - iScore_Left) >= 2) {
+    iWinner = TEAM_RIGHT;
+  } else {
+    iWinner = -1;
+  }
+}
+
+int Game::get_winner() {
+  return iWinner;
 }
 

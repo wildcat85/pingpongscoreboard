@@ -34,7 +34,7 @@ void setup() {
   myButtons.assignPlayers(36, 48, 44, 40);
   myDisplay.set_ink(15,0,0);
   myDisplay.set_paper(0,0,0);
-  myDisplay.show_word("READY");
+//  myDisplay.show_word("READY");
 }
 
 /* ---------------------------------- */
@@ -44,6 +44,8 @@ void setup() {
 void loop() {
   String sButtons;
   
+  if (!myGame.GameOn) {myDisplay.screen_saver("READY", SCROLL_R2L); }
+
   if (myButtons.buttonHeld) {
     if (millis() - myButtons.buttonHeldTime > 1000) {
       Serial.print("5 points claimed by player ");
@@ -57,6 +59,10 @@ void loop() {
   if (myButtons.get_button_states(sButtons)) {
     process_button_presses(sButtons);                                  // process button presses
     update_score_board();
+    if (myGame.get_winner() > -1) {
+      Serial.print("WINNER IS ");
+      Serial.println(myGame.get_winner());
+    }
   }
 }
 
@@ -84,15 +90,18 @@ void update_score_board() {
   iDirection = myGame.get_direction();
   iPoints = myGame.get_points();
 
-  if (myGame.score_changed(TEAM_LEFT)) {
+  if (myGame.score_changed(TEAM_LEFT, true)) {
     iScore = myGame.get_score(TEAM_LEFT);
+    if (myGame.get_winner() == TEAM_LEFT) { myDisplay.set_ink(15,15,15); }
     if (iScore < 10) sNum = "0" + (String)iScore; else sNum = (String)iScore;
     myDisplay.character(0x10, 0, 0, sNum[0], true);
     myDisplay.character(0x11, 0, 0, sNum[1], true);
+    
   }
   
-  if (myGame.score_changed(TEAM_RIGHT)) {
+  if (myGame.score_changed(TEAM_RIGHT, true)) {
     iScore = myGame.get_score(TEAM_RIGHT);
+    if (myGame.get_winner() == TEAM_RIGHT) { myDisplay.set_ink(15,15,15); }
     if (iScore < 10) sNum = "0" + (String)iScore; else sNum = (String)iScore;
     myDisplay.character(0x13, 1, 0, sNum[0], true);
     myDisplay.character(0x14, 1, 0, sNum[1], true);
@@ -111,7 +120,7 @@ void update_score_board() {
 
   myDisplay.swap_buffers();
   
-  Serial.println((String)myGame.get_score(TEAM_LEFT) + " - " + (String)myGame.get_score(TEAM_RIGHT) + " [" + (String)sHistory + "]");
+  Serial.println((String)myGame.get_score(TEAM_LEFT) + " - " + (String)myGame.get_score(TEAM_RIGHT) + " [" + (String)myButtons.sHistory + "]");
 }
 
 
