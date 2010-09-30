@@ -25,6 +25,9 @@
 #define CMD_PRINT_CHAR        0x2A
 #define CMD_DRAW_ROW_MASK     0x2B
 
+#define SCROLL_R2L            0x01
+#define SCROLL_L2R            0x02
+
 #include "WProgram.h"
 #include <Wire.h>
 
@@ -42,7 +45,7 @@ class Display {
   void character(int iAddr, int iX, int iY, char cChar, boolean bClearBuffer);
   void draw_row_mask(int iAddr, int iRow, int iXoffset, byte bBitmask);
   void show_word(String sWord, int iPosition = 1, boolean bForce = false);
-  void screen_saver(String sScrollText);
+  void screen_saver(String sScrollText, byte bScroll);
   void getCharGaps(int aGaps[], char cChar);
   char *replace_str(char *str, char *orig, char *rep);
   static const int CMD_totalArgs[];

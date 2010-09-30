@@ -22,16 +22,20 @@ class Game {
   int get_points();
   int get_direction();
   void set_direction(boolean bTeam);
-  boolean score_changed(boolean bTeam);
+  int get_winner();
+  boolean score_changed(boolean bTeam, boolean reset = false);
   boolean GameOn;
+  
   
   private:
   int iGamePoints;
   int iScore_Left;
   int iScore_Right;
   int iDirection;
+  int iWinner;
   boolean bScore_Left_Changed;
   boolean bScore_Right_Changed;
+  void check_scores();
   
 };
 
