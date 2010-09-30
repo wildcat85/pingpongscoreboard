@@ -40,7 +40,6 @@ boolean Buttons::get_button_states(String &sButtons) {
   boolean result = false;
   static long lastDebounceTime = 0;  // the last time the output pin was toggled
 
-//  String sButtons = "";
   for (int iCount = 0; iCount < 4; iCount++) {
 
     button_state = getState(iCount);

@@ -34,7 +34,6 @@ void setup() {
   myButtons.assignPlayers(36, 48, 44, 40);
   myDisplay.set_ink(15,0,0);
   myDisplay.set_paper(0,0,0);
-//  myDisplay.show_word("READY");
 }
 
 /* ---------------------------------- */
