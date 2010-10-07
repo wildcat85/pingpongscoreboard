@@ -9,6 +9,8 @@
 
 Game::Game() {
   Serial.println("Initialising Game class");
+  GameOn = false;
+  iWinner = -1;
 }
 
 void Game::start(boolean bTeam) {
@@ -32,6 +34,7 @@ void Game::reset() {
 int Game::get_score(boolean bTeam) {
 //  Serial.println(__func__);
   if (bTeam) { return iScore_Left; } else { return iScore_Right; } 
+//  return (bTeam) ? iScore_Left : iScore_Right;
 }
 
 int Game::get_points() {
@@ -77,6 +80,7 @@ void Game::adjust_points(boolean bTeam, int iPoints) {
 }
 
 void Game::check_scores() {
+//  Serial.println(__func__);
   if (iScore_Left >= 21 && (iScore_Left - iScore_Right) >= 2) {
     iWinner = TEAM_LEFT;
   } else if (iScore_Right >= 21 && (iScore_Right - iScore_Left) >= 2) {
@@ -87,6 +91,7 @@ void Game::check_scores() {
 }
 
 int Game::get_winner() {
+//  Serial.println(__func__);
   return iWinner;
 }
 

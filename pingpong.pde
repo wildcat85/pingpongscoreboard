@@ -2,6 +2,14 @@
 
   pingpong.pde - Ping Pong Score Board
   Daniel Mackie <eikcam@gmail.com>
+  
+  Test board pins and colours
+  48 = Red
+  44 = Green
+  40 = White
+  36 = Black
+  GND = Yellow
+  5v  = White
 
 */
 
@@ -16,8 +24,9 @@ const String VERSION = "0.1a";
 const int POINTS_BEFORE_CHANGE = 5;
 
 // Initialise variables - These babies will change
-String sHistory = "";
+String sButtons;
 boolean bFiveClaimedDirection = false;
+String sScreenSaver[] = {"PING PONG"};
 Buttons myButtons;
 Display myDisplay;
 Game myGame;
@@ -41,25 +50,24 @@ void setup() {
 // loop all the good stuff
 /* ---------------------------------- */
 void loop() {
-  String sButtons;
   
-  if (!myGame.GameOn) {myDisplay.screen_saver("PING PONG", SCROLL_R2L); }
+  if (!myGame.GameOn) {myDisplay.screen_saver(sScreenSaver, SCROLL_R2L); }
 
   if (myButtons.buttonHeld) {
     if (millis() - myButtons.buttonHeldTime > 1000) {
-      Serial.print("5 points claimed by player ");
-      Serial.println(myButtons.buttonHeldOwner);
-      myDisplay.show_word("FIVE?");
+//      Serial.print("5 points claimed by player ");
+//      Serial.println(myButtons.buttonHeldOwner);
+//      myDisplay.show_word("FIVE?");
       myButtons.buttonHeld = false;
-      myButtons.bFiveClaimed = true;
-      bFiveClaimedDirection = true;
+//      myButtons.bFiveClaimed = true;
+//      bFiveClaimedDirection = true;
     }
   }
   if (myButtons.get_button_states(sButtons)) {
     process_button_presses(sButtons);                                  // process button presses
     update_score_board();
-    if (myGame.get_winner() > -1) {
-      Serial.print("WINNER IS ");
+    if (myGame.get_winner() != -1) {
+      Serial.print("WINNER IS - ");
       Serial.println(myGame.get_winner());
     }
   }
@@ -161,14 +169,19 @@ void process_button_presses(String sButtons) {
       myGame.adjust_points(iTeam, 1);
     } else if (sButtons == "1100") {
       iTeam = TEAM_LEFT;
-      myGame.adjust_points(iTeam, -1);
+      if (myGame.get_score(iTeam) > 0) {
+        myGame.adjust_points(iTeam, -1);
+      }
     } else if (sButtons == "0010" || sButtons == "0001") {     // Players 3 and 4
       iTeam = TEAM_RIGHT;
       myGame.adjust_points(iTeam, 1);
     } else if (sButtons == "0011") {
       iTeam = TEAM_RIGHT;
-      myGame.adjust_points(iTeam, -1);
+      if (myGame.get_score(iTeam) > 0) {
+        myGame.adjust_points(iTeam, -1);
+      }
     } else if (sButtons == "1111") { // Functions
+      myButtons.wait_for_zero = true;
       myGame.reset();
     }
   } else {
