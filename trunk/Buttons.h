@@ -20,6 +20,7 @@ class Buttons {
   int buttonHeldOwner;
   long buttonHeldTime;
   String sHistory;
+  boolean wait_for_zero;
   
   private:
     byte playerButtons[4];         // the number of the pushbutton pin

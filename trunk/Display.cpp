@@ -136,14 +136,17 @@ void Display::character(int iAddr, int iX, int iY, char cChar, boolean bClearBuf
   Future improvements will allow a lot more variables such as speed,
   direction and alike.
 */
-void Display::screen_saver(String sScrollText, byte bScroll) {
+void Display::screen_saver(String sScrollText[], byte bScroll) {
 //  Serial.println(__func__);
   static long previousMillis = 0;        // will store last time LED was updated
   long interval = 100;           // interval at which to blink (milliseconds)
   static int iScroll;
   static boolean bInit = true;
+  static int iGoText;
   unsigned long currentMillis = millis();
-  int iTextLen = sScrollText.length()*8*-1;
+  int iTextLen;
+ 
+  iTextLen = sScrollText[0].length()*8*-1;
   
   if (bInit) {
     if (bScroll == SCROLL_R2L) {
@@ -156,7 +159,7 @@ void Display::screen_saver(String sScrollText, byte bScroll) {
 
   if(currentMillis - previousMillis > interval) {
     previousMillis = currentMillis;
-    show_word(sScrollText, iScroll, true);
+    show_word(sScrollText[0], iScroll, true);
     iScroll--;
     if (bScroll == SCROLL_R2L) {
       if (iScroll < iTextLen) {

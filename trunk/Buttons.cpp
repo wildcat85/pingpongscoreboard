@@ -12,6 +12,8 @@ const int HISTORY_LENGTH = 8;     // the history length
 
 Buttons::Buttons() {
   Serial.println("Initialising Buttons class");
+  bFiveClaimed = false;
+  buttonHeld = false;
 }
 
 void Buttons::assignPlayers(byte i1, byte i2, byte i3, byte i4) {
@@ -35,14 +37,20 @@ boolean Buttons::getState(byte iPlayer) {
 // get current button states
 /* ---------------------------------- */
 boolean Buttons::get_button_states(String &sButtons) {
-  static int button_states[4] = {LOW,LOW,LOW,LOW};
-  static int button_state;
+  static byte button_states[4] = {LOW,LOW,LOW,LOW};
+  static byte button_state;
+  int buttons_down = 0;
+  static boolean multi_button = false;
   boolean result = false;
   static long lastDebounceTime = 0;  // the last time the output pin was toggled
+  
+  sButtons = "";
 
   for (int iCount = 0; iCount < 4; iCount++) {
-
+    sButtons = sButtons + (int)button_states[iCount];
     button_state = getState(iCount);
+    if (button_state == HIGH) buttons_down++;
+    if (buttons_down > 1) multi_button = true;
 
     if (button_state == HIGH && button_states[iCount] == LOW) {
       if (!buttonHeld && !bFiveClaimed) {
@@ -53,7 +61,6 @@ boolean Buttons::get_button_states(String &sButtons) {
       button_states[iCount] = button_state;
       if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY) {
         button_states[iCount] = button_state;
-        result = true;
         sHistory = (iCount+1) + sHistory;
       }
     } else if (button_state == LOW && button_states[iCount] == HIGH) {
@@ -61,9 +68,11 @@ boolean Buttons::get_button_states(String &sButtons) {
       button_states[iCount] = button_state;
       buttonHeldTime = 0;
       buttonHeld = false;
+      result = true;
     }
-  sButtons= sButtons + (int)button_state;
   }
   sHistory = sHistory.substring(0,HISTORY_LENGTH); // force history to only hold HISTORY_LENGTH previous button presses
+  if (buttons_down == 0 && multi_button == true) { multi_button = false; result = false; }
+  if (wait_for_zero) { wait_for_zero = (buttons_down > 0) ? true : false; result = false; }
   return result;
 }
