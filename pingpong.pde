@@ -20,8 +20,7 @@
 #include "Game.h"
 
 // Initialise constants - These babies won't change
-const String VERSION = "0.1a";
-const int POINTS_BEFORE_CHANGE = 5;
+const String VERSION = "0.1";
 
 // Initialise variables - These babies will change
 String sButtons;
@@ -40,6 +39,7 @@ void setup() {
   Serial.begin(57600);                             // config serial as 57600 for some sweet serial monitor action
   Serial.println("PingPong v" + (String)VERSION);
   Serial.println("--------------");
+  myGame.ChangeServeOnPoints = 5;
   myButtons.assignPlayers(36, 48, 44, 40);
   myDisplay.set_ink(15,0,0);
   myDisplay.set_paper(0,0,0);
@@ -53,14 +53,13 @@ void loop() {
   
   if (!myGame.GameOn) {myDisplay.screen_saver(sScreenSaver, SCROLL_R2L); }
 
-  if (myButtons.buttonHeld) {
-    if (millis() - myButtons.buttonHeldTime > 1000) {
-//      Serial.print("5 points claimed by player ");
-//      Serial.println(myButtons.buttonHeldOwner);
-//      myDisplay.show_word("FIVE?");
-      myButtons.buttonHeld = false;
-//      myButtons.bFiveClaimed = true;
-//      bFiveClaimedDirection = true;
+  if (myButtons.buttonHeld && !myGame.FivePointsClaimed) {
+    if (millis() - myButtons.buttonHeldTime > 5000) {
+      Serial.print("5 points claimed by player ");
+      Serial.println(myButtons.buttonHeld);
+      myDisplay.show_word("FIVE?");
+      myGame.FivePointsClaimed = myButtons.buttonHeld;
+      myButtons.wait_for_zero = true;
     }
   }
   if (myButtons.get_button_states(sButtons)) {
@@ -73,17 +72,7 @@ void loop() {
   }
 }
 
-void draw_arrow(int _iDirection) {
-  char Arrow[2][8] = {{0x00, 0x04, 0x02, 0xFF, 0xFF, 0x02, 0x04, 0x00},
-                      {0x00, 0x20, 0x40, 0xFF, 0xFF, 0x40, 0x20, 0x00}};
 
-  myDisplay.set_ink(0,15,0);
-  myDisplay.sendCMD(0x12, CMD_CLEAR_PAPER);
-  for (int row=7; row>=0; row--) {      
-      myDisplay.draw_row_mask(0x12, row, 0, Arrow[_iDirection][row]);
-  }
-  myDisplay.set_ink(15,0,0);
-}
 
 /* ---------------------------------- */
 // void update_score_board(int* score)
@@ -120,11 +109,7 @@ void update_score_board() {
     bFiveClaimedDirection = false;
   }
   
-  if (floor(iPoints/POINTS_BEFORE_CHANGE) != iArrow) {
-    myGame.set_direction(!iDirection);
-    draw_arrow(!iDirection);
-    iArrow = floor(iPoints/POINTS_BEFORE_CHANGE);
-  }
+  myDisplay.draw_arrow(myGame.get_direction());
 
   myDisplay.swap_buffers();
   
@@ -137,56 +122,49 @@ void update_score_board() {
 // calculate scores and update score board
 /* ---------------------------------- */
 void process_button_presses(String sButtons) {
-  int iTeam;
-  
   if (myGame.GameOn) {
-    if (myButtons.bFiveClaimed) {
-      if (myButtons.buttonHeldOwner == 1 || myButtons.buttonHeldOwner == 2) {
-        iTeam = TEAM_LEFT;
+    if (myGame.FivePointsClaimed) {
+      Serial.println(sButtons);
+      if (myGame.FivePointsClaimed == 1 || myGame.FivePointsClaimed == 2) {
         if (sButtons == "0010" || sButtons == "0001") {
           Serial.println("5 points PASSED");
-          myGame.adjust_points(iTeam, 4);
+          myGame.adjust_points(TEAM_LEFT, 5);
+          myGame.adjust_points(TEAM_RIGHT, 0);
         } else {
           Serial.println("5 points FAILED");
-          myGame.adjust_points(iTeam, -1);
         }
       } else {
-        iTeam = TEAM_RIGHT;
         if (sButtons == "1000" || sButtons == "0100") {
           Serial.println("5 points PASSED");
-          myGame.adjust_points(iTeam, 4);
+          myGame.adjust_points(TEAM_RIGHT, 5);
+          myGame.adjust_points(TEAM_LEFT, 0);
         } else {
           Serial.println("5 points FAILED");
-          myGame.adjust_points(iTeam, -1);
         }
       }
-      draw_arrow(myGame.get_direction());
-      myButtons.bFiveClaimed = false;
+      myDisplay.draw_arrow(myGame.get_direction());
+      myGame.FivePointsClaimed = false;
     } else
     // Players 1 and 2
     if (sButtons == "1000" || sButtons == "0100") {
-      iTeam = TEAM_LEFT;
-      myGame.adjust_points(iTeam, 1);
+      myGame.adjust_points(TEAM_LEFT, 1);
     } else if (sButtons == "1100") {
-      iTeam = TEAM_LEFT;
-      if (myGame.get_score(iTeam) > 0) {
-        myGame.adjust_points(iTeam, -1);
+      if (myGame.get_score(TEAM_LEFT) > 0) {
+        myGame.adjust_points(TEAM_LEFT, -1);
       }
     } else if (sButtons == "0010" || sButtons == "0001") {     // Players 3 and 4
-      iTeam = TEAM_RIGHT;
-      myGame.adjust_points(iTeam, 1);
+      myGame.adjust_points(TEAM_RIGHT, 1);
     } else if (sButtons == "0011") {
-      iTeam = TEAM_RIGHT;
-      if (myGame.get_score(iTeam) > 0) {
-        myGame.adjust_points(iTeam, -1);
+      if (myGame.get_score(TEAM_RIGHT) > 0) {
+        myGame.adjust_points(TEAM_RIGHT, -1);
       }
     } else if (sButtons == "1111") { // Functions
       myButtons.wait_for_zero = true;
       myGame.reset();
     }
   } else {
-    if (sButtons == "1000" || sButtons == "0100") { myGame.start(0); }
-    if (sButtons == "0010" || sButtons == "0001") { myGame.start(1); }
+    if (sButtons == "1000" || sButtons == "0100") { myGame.start(TEAM_LEFT); }
+    if (sButtons == "0010" || sButtons == "0001") { myGame.start(TEAM_RIGHT); }
   }
 }
 

@@ -74,6 +74,18 @@ void Display::draw_pixel(int iAddr, int iX, int iY) {
   sendCMD(iAddr, CMD_DRAW_PIXEL, toByte(iX), toByte(iY));
 }
 
+void Display::draw_arrow(int iDirection) {
+  char Arrow[2][8] = {{0x00, 0x04, 0x02, 0xFF, 0xFF, 0x02, 0x04, 0x00},
+                      {0x00, 0x20, 0x40, 0xFF, 0xFF, 0x40, 0x20, 0x00}};
+
+  set_ink(0,15,0);
+  sendCMD(0x12, CMD_CLEAR_PAPER);
+  for (int row=7; row>=0; row--) {      
+      draw_row_mask(0x12, row, 0, Arrow[iDirection][row]);
+  }
+  set_ink(15,0,0);
+}
+
 /*
   swap_buffers(boolean bAll)
   Draws a square and sets the receiving display as changed.

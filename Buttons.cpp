@@ -39,35 +39,39 @@ boolean Buttons::getState(byte iPlayer) {
 boolean Buttons::get_button_states(String &sButtons) {
   static byte button_states[4] = {LOW,LOW,LOW,LOW};
   static byte button_state;
-  int buttons_down = 0;
+  static int buttons_down = 0;
   static boolean multi_button = false;
-  boolean result = false;
   static long lastDebounceTime = 0;  // the last time the output pin was toggled
+  boolean result = false;
   
   sButtons = "";
 
   for (int iCount = 0; iCount < 4; iCount++) {
     sButtons = sButtons + (int)button_states[iCount];
     button_state = getState(iCount);
-    if (button_state == HIGH) buttons_down++;
-    if (buttons_down > 1) multi_button = true;
 
     if (button_state == HIGH && button_states[iCount] == LOW) {
-      if (!buttonHeld && !bFiveClaimed) {
-        buttonHeld = true;
-        buttonHeldOwner = iCount+1;
+      if (!buttonHeld) {
+        buttonHeld = iCount+1;
+        buttonHeldTime = millis();
+        Serial.println("button down");
       }
-      buttonHeldTime = millis();
+      buttons_down++;
+      if (buttons_down > 1) { multi_button = true; }
       button_states[iCount] = button_state;
       if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY) {
         button_states[iCount] = button_state;
         sHistory = (iCount+1) + sHistory;
       }
     } else if (button_state == LOW && button_states[iCount] == HIGH) {
+      buttons_down--;
       lastDebounceTime = millis();
       button_states[iCount] = button_state;
-      buttonHeldTime = 0;
-      buttonHeld = false;
+      if (buttons_down == 0) {
+        buttonHeld = 0;
+        buttonHeldTime = 0;
+        Serial.println("button up");
+      }
       result = true;
     }
   }

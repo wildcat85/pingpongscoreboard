@@ -15,9 +15,8 @@ class Buttons {
   void assignPlayers(byte i1, byte i2, byte i3, byte i4);
   boolean getState(byte iPlayer);
   boolean get_button_states(String &sButtons);
-  boolean buttonHeld;
+  int buttonHeld;
   boolean bFiveClaimed;
-  int buttonHeldOwner;
   long buttonHeldTime;
   String sHistory;
   boolean wait_for_zero;
