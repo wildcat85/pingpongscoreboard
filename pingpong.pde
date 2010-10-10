@@ -24,7 +24,6 @@ const String VERSION = "0.1";
 
 // Initialise variables - These babies will change
 String sButtons;
-boolean bFiveClaimedDirection = false;
 String sScreenSaver[] = {"PING PONG"};
 Buttons myButtons;
 Display myDisplay;
@@ -53,7 +52,17 @@ void loop() {
   
   if (!myGame.GameOn) {myDisplay.screen_saver(sScreenSaver, SCROLL_R2L); }
 
-  if (myButtons.buttonHeld && !myGame.FivePointsClaimed) {
+  if (myButtons.get_button_states(sButtons)) {
+    myGame.FivePointsClaimAllowed = (myButtons.MultiButtons) ? false : true;
+    process_button_presses(sButtons);                                  // process button presses
+    update_score_board();
+    if (myGame.get_winner() != -1) {
+      Serial.print("WINNER IS - ");
+      Serial.println(myGame.get_winner());
+    }
+  }
+
+  if (myButtons.buttonHeld && !myGame.FivePointsClaimed && myGame.FivePointsClaimAllowed) {
     if (millis() - myButtons.buttonHeldTime > 5000) {
       Serial.print("5 points claimed by player ");
       Serial.println(myButtons.buttonHeld);
@@ -62,14 +71,7 @@ void loop() {
       myButtons.wait_for_zero = true;
     }
   }
-  if (myButtons.get_button_states(sButtons)) {
-    process_button_presses(sButtons);                                  // process button presses
-    update_score_board();
-    if (myGame.get_winner() != -1) {
-      Serial.print("WINNER IS - ");
-      Serial.println(myGame.get_winner());
-    }
-  }
+
 }
 
 
@@ -104,11 +106,6 @@ void update_score_board() {
     if (myGame.get_winner() == TEAM_RIGHT) { myDisplay.set_ink(15,0,0); }
   }
   
-  if (bFiveClaimedDirection) {
-    iArrow = !iArrow;
-    bFiveClaimedDirection = false;
-  }
-  
   myDisplay.draw_arrow(myGame.get_direction());
 
   myDisplay.swap_buffers();
@@ -124,7 +121,7 @@ void update_score_board() {
 void process_button_presses(String sButtons) {
   if (myGame.GameOn) {
     if (myGame.FivePointsClaimed) {
-      Serial.println(sButtons);
+//      Serial.println(sButtons);
       if (myGame.FivePointsClaimed == 1 || myGame.FivePointsClaimed == 2) {
         if (sButtons == "0010" || sButtons == "0001") {
           Serial.println("5 points PASSED");
@@ -132,6 +129,8 @@ void process_button_presses(String sButtons) {
           myGame.adjust_points(TEAM_RIGHT, 0);
         } else {
           Serial.println("5 points FAILED");
+          myGame.adjust_points(TEAM_LEFT, 0);
+          myGame.adjust_points(TEAM_RIGHT, 0);
         }
       } else {
         if (sButtons == "1000" || sButtons == "0100") {
@@ -140,6 +139,8 @@ void process_button_presses(String sButtons) {
           myGame.adjust_points(TEAM_LEFT, 0);
         } else {
           Serial.println("5 points FAILED");
+          myGame.adjust_points(TEAM_RIGHT, 0);
+          myGame.adjust_points(TEAM_LEFT, 0);
         }
       }
       myDisplay.draw_arrow(myGame.get_direction());

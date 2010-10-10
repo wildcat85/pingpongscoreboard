@@ -27,6 +27,7 @@ class Game {
   boolean GameOn;
   int FivePointsClaimed;
   int ChangeServeOnPoints;
+  boolean FivePointsClaimAllowed;
   
   
   private:
