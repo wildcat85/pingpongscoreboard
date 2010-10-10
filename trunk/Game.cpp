@@ -18,10 +18,12 @@ void Game::start(boolean bTeam) {
   iGamePoints = 0;
   iScore_Left = 0;
   iScore_Right = 0;
+  iServeChanges = 0;
   set_direction(bTeam);
   bScore_Left_Changed=true;
   bScore_Right_Changed=true;
   iWinner = -1;
+  FivePointsClaimed = false;
   GameOn = true;
 }
 
@@ -88,6 +90,12 @@ void Game::check_scores() {
   } else {
     iWinner = -1;
   }
+
+  if (floor(iGamePoints/ChangeServeOnPoints) != iServeChanges) {
+    set_direction(!iDirection);
+    iServeChanges = floor(iGamePoints/ChangeServeOnPoints);
+  }
+
 }
 
 int Game::get_winner() {

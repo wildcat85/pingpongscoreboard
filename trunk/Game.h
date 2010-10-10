@@ -25,6 +25,8 @@ class Game {
   int get_winner();
   boolean score_changed(boolean bTeam, boolean reset = false);
   boolean GameOn;
+  int FivePointsClaimed;
+  int ChangeServeOnPoints;
   
   
   private:
@@ -33,6 +35,7 @@ class Game {
   int iScore_Right;
   int iDirection;
   int iWinner;
+  int iServeChanges;
   boolean bScore_Left_Changed;
   boolean bScore_Right_Changed;
   void check_scores();

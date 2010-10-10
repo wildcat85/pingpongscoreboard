@@ -39,6 +39,7 @@ class Display {
   void swap_buffers(boolean bAll = false);
   void clear_buffers(boolean bAll = false);
   void draw_pixel(int iAddr, int iX, int iY);
+  void draw_arrow(int iDirection);
   void draw_square(int iAddr, int iX1, int iY1, int iX2, int iY2);
   void set_ink(int iR, int iG, int iB);
   void set_paper(int iR, int iG, int iB);
