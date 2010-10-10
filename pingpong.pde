@@ -63,7 +63,7 @@ void loop() {
   }
 
   if (myButtons.buttonHeld && !myGame.FivePointsClaimed && myGame.FivePointsClaimAllowed) {
-    if (millis() - myButtons.buttonHeldTime > 5000) {
+    if (millis() - myButtons.buttonHeldTime > 1000) {
       Serial.print("5 points claimed by player ");
       Serial.println(myButtons.buttonHeld);
       myDisplay.show_word("FIVE?");
@@ -73,8 +73,6 @@ void loop() {
   }
 
 }
-
-
 
 /* ---------------------------------- */
 // void update_score_board(int* score)
