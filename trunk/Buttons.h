@@ -16,6 +16,7 @@ class Buttons {
   boolean getState(byte iPlayer);
   boolean get_button_states(String &sButtons);
   int buttonHeld;
+  boolean MultiButtons;
   boolean bFiveClaimed;
   long buttonHeldTime;
   String sHistory;

@@ -10,6 +10,7 @@
 Game::Game() {
   Serial.println("Initialising Game class");
   GameOn = false;
+  FivePointsClaimAllowed = false;
   iWinner = -1;
 }
 
@@ -24,6 +25,7 @@ void Game::start(boolean bTeam) {
   bScore_Right_Changed=true;
   iWinner = -1;
   FivePointsClaimed = false;
+  FivePointsClaimAllowed = true;
   GameOn = true;
 }
 

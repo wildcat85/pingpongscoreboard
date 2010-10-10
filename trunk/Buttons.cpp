@@ -54,10 +54,10 @@ boolean Buttons::get_button_states(String &sButtons) {
       if (!buttonHeld) {
         buttonHeld = iCount+1;
         buttonHeldTime = millis();
-        Serial.println("button down");
+//        Serial.println("button down");
       }
       buttons_down++;
-      if (buttons_down > 1) { multi_button = true; }
+      if (buttons_down > 1) { multi_button = true; MultiButtons = true; }
       button_states[iCount] = button_state;
       if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY) {
         button_states[iCount] = button_state;
@@ -70,7 +70,8 @@ boolean Buttons::get_button_states(String &sButtons) {
       if (buttons_down == 0) {
         buttonHeld = 0;
         buttonHeldTime = 0;
-        Serial.println("button up");
+        MultiButtons = false;
+//        Serial.println("button up");
       }
       result = true;
     }
