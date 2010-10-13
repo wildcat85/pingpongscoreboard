@@ -30,7 +30,6 @@ boolean Display::changed[] = {0,0,0,0,0};
 */
 
 Display::Display() {
-  Serial.println("Initialising Display class");
   RainbowCMD[0] = 'r';
 }
 

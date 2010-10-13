@@ -11,13 +11,11 @@ const byte DEBOUNCE_DELAY = 20;   // the debounce time; increase if the output f
 const int HISTORY_LENGTH = 8;     // the history length
 
 Buttons::Buttons() {
-  Serial.println("Initialising Buttons class");
   bFiveClaimed = false;
   buttonHeld = false;
 }
 
 void Buttons::assignPlayers(byte i1, byte i2, byte i3, byte i4) {
-//  Serial.println(__func__);
   playerButtons[0] = i1;
   pinMode(playerButtons[0], INPUT);
   playerButtons[1] = i2;
@@ -40,7 +38,6 @@ boolean Buttons::get_button_states(String &sButtons) {
   static byte button_states[4] = {LOW,LOW,LOW,LOW};
   static byte button_state;
   static int buttons_down = 0;
-  static boolean multi_button = false;
   static long lastDebounceTime = 0;  // the last time the output pin was toggled
   boolean result = false;
   
@@ -54,10 +51,9 @@ boolean Buttons::get_button_states(String &sButtons) {
       if (!buttonHeld) {
         buttonHeld = iCount+1;
         buttonHeldTime = millis();
-//        Serial.println("button down");
       }
       buttons_down++;
-      if (buttons_down > 1) { multi_button = true; MultiButtons = true; }
+      if (buttons_down > 1 && MultiButtons != true) { MultiButtons = true; }
       button_states[iCount] = button_state;
       if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY) {
         button_states[iCount] = button_state;
@@ -70,14 +66,12 @@ boolean Buttons::get_button_states(String &sButtons) {
       if (buttons_down == 0) {
         buttonHeld = 0;
         buttonHeldTime = 0;
-        MultiButtons = false;
-//        Serial.println("button up");
       }
       result = true;
     }
   }
   sHistory = sHistory.substring(0,HISTORY_LENGTH); // force history to only hold HISTORY_LENGTH previous button presses
-  if (buttons_down == 0 && multi_button == true) { multi_button = false; result = false; }
+  if (buttons_down == 0 && MultiButtons == true) { MultiButtons = false; result = false; }
   if (wait_for_zero) { wait_for_zero = (buttons_down > 0) ? true : false; result = false; }
   return result;
 }

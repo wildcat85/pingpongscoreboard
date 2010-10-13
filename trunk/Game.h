@@ -23,6 +23,7 @@ class Game {
   int get_direction();
   void set_direction(boolean bTeam);
   int get_winner();
+  void adjust_serve();
   boolean score_changed(boolean bTeam, boolean reset = false);
   boolean GameOn;
   int FivePointsClaimed;
@@ -37,6 +38,7 @@ class Game {
   int iDirection;
   int iWinner;
   int iServeChanges;
+  boolean bServeChangeSkip;
   boolean bScore_Left_Changed;
   boolean bScore_Right_Changed;
   void check_scores();
