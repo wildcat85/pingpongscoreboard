@@ -7,7 +7,7 @@
 #include "WProgram.h"
 #include "Buttons.h"
 
-const byte DEBOUNCE_DELAY = 20;   // the debounce time; increase if the output flickers
+const byte DEBOUNCE_DELAY = 50;   // the debounce time; increase if the output flickers
 const int HISTORY_LENGTH = 8;     // the history length
 
 Buttons::Buttons() {
@@ -43,35 +43,35 @@ boolean Buttons::get_button_states(String &sButtons) {
   
   sButtons = "";
 
-  for (int iCount = 0; iCount < 4; iCount++) {
-    sButtons = sButtons + (int)button_states[iCount];
-    button_state = getState(iCount);
+  if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY) {
 
-    if (button_state == HIGH && button_states[iCount] == LOW) {
-      if (!buttonHeld) {
-        buttonHeld = iCount+1;
-        buttonHeldTime = millis();
-      }
-      buttons_down++;
-      if (buttons_down > 1 && MultiButtons != true) { MultiButtons = true; }
-      button_states[iCount] = button_state;
-      if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY) {
+    for (int iCount = 0; iCount < 4; iCount++) {
+      sButtons = sButtons + (int)button_states[iCount];
+      button_state = getState(iCount);
+
+      if (button_state == HIGH && button_states[iCount] == LOW) {
+        if (!buttonHeld) {
+          buttonHeld = iCount+1;
+          buttonHeldTime = millis();
+        }
+        buttons_down++;
+        if (buttons_down > 1 && MultiButtons != true) { MultiButtons = true; }
+          button_states[iCount] = button_state;
+          sHistory = (iCount+1) + sHistory;
+      } else if (button_state == LOW && button_states[iCount] == HIGH) {
+        buttons_down--;
+        lastDebounceTime = millis();
         button_states[iCount] = button_state;
-        sHistory = (iCount+1) + sHistory;
+        if (buttons_down == 0) {
+          buttonHeld = 0;
+          buttonHeldTime = 0;
+        }
+        result = true;
       }
-    } else if (button_state == LOW && button_states[iCount] == HIGH) {
-      buttons_down--;
-      lastDebounceTime = millis();
-      button_states[iCount] = button_state;
-      if (buttons_down == 0) {
-        buttonHeld = 0;
-        buttonHeldTime = 0;
-      }
-      result = true;
     }
-  }
   sHistory = sHistory.substring(0,HISTORY_LENGTH); // force history to only hold HISTORY_LENGTH previous button presses
   if (buttons_down == 0 && MultiButtons == true) { MultiButtons = false; result = false; }
   if (wait_for_zero) { wait_for_zero = (buttons_down > 0) ? true : false; result = false; }
   return result;
+  }
 }

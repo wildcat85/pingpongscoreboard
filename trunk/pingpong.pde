@@ -60,7 +60,7 @@ void loop() {
   }
 
   if (myGame.GameOn) {
-    myGame.FivePointsClaimAllowed = (myButtons.MultiButtons) ? false : true;
+    myGame.FivePointsClaimAllowed = (myButtons.MultiButtons || myGame.get_winner() != -1) ? false : true;
     if (myButtons.buttonHeld && !myGame.FivePointsClaimed && myGame.FivePointsClaimAllowed) {
       if (millis() - myButtons.buttonHeldTime > 1000) {
         myDisplay.show_word("FIVE?");
@@ -81,6 +81,8 @@ void update_score_board() {
 
   iDirection = myGame.get_direction();
   iPoints = myGame.get_points();
+  
+  myGame.check_scores();
 
   iScore = myGame.get_score(TEAM_LEFT);
   if (myGame.get_winner() == TEAM_LEFT) { myDisplay.set_ink(15,15,15); }
